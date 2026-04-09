@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小说详情 - 墨韵书阁</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo a {
+            color: white;
+            text-decoration: none;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+        }
+
+        /* 小说信息区域 */
+        .book-detail {
+            background: white;
+            padding: 30px;
+            margin: 20px 0;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .book-header {
+            display: flex;
+            gap: 30px;
+        }
+
+        .book-cover-large {
+            width: 200px;
+            height: 260px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            color: white;
+        }
+
+        .book-info-large {
+            flex: 1;
+        }
+
+        .book-title-large {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .book-meta {
+            color: #999;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .book-meta span {
+            margin-right: 20px;
+        }
+
+        .book-description {
+            line-height: 1.8;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .book-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 30px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-primary:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        /* 章节列表 */
+        .chapter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chapter-header {
+            font-size: 20px;
+            font-weight: bold;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 20px;
+        }
+
+        .chapter-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .chapter-item {
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .chapter-item:hover {
+            background: #e74c3c;
+            color: white;
+            transform: translateX(5px);
+        }
+
+        /* 评论区域 */
+        .comment-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .comment-form {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .comment-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            resize: none;
+            font-family: inherit;
+        }
+
+        .comment-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .comment-user {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .comment-content {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .comment-time {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .book-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .chapter-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="nav">
+                <div class="logo">
+                    <a href="/">📚 墨韵书阁</a>
+                </div>
+                <a href="/" class="back-btn">← 返回首页</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="bookDetail" class="book-detail">
+            <div class="loading">加载中...</div>
+        </div>
+
+        <div id="chapterSection" class="chapter-section" style="display: none;">
+            <div class="chapter-header">📖 章节列表</div>
+            <div id="chapterList" class="chapter-list"></div>
+        </div>
+
+        <div id="commentSection" class="comment-section" style="display: none;">
+            <div class="chapter-header">💬 读者评论</div>
+            <div id="commentForm" class="comment-form">
+                <textarea id="commentContent" class="comment-input" rows="3" placeholder="写下你的评论..."></textarea>
+                <button class="btn btn-primary" onclick="addComment()">发表评论</button>
+            </div>
+            <div id="commentList"></div>
+        </div>
+    </div>
+
+    <script>
+        let bookId = null;
+        let token = null;
+        let userId = null;
+
+        window.onload = function() {
+            // 获取URL参数
+            const urlParams = new URLSearchParams(window.location.search);
+            bookId = urlParams.get('id');
+            
+            console.log('bookId:', bookId);
+            
+            if (bookId) {
+                loadBookDetail();
+                loadChapters();
+                loadComments();
+            } else {
+                document.getElementById('bookDetail').innerHTML = '<div class="loading">未找到小说ID</div>';
+            }
+            
+            token = localStorage.getItem('token');
+            userId = localStorage.getItem('userId');
+            
+            if (!token) {
+                const commentForm = document.getElementById('commentForm');
+                if (commentForm) {
+                    commentForm.style.display = 'none';
+                    document.getElementById('commentSection').innerHTML += '<div style="text-align:center;padding:20px;color:#999;">请先登录后评论</div>';
+                }
+            }
+        };
+
+        async function loadBookDetail() {
+            try {
+                const response = await fetch(`/api/book/${bookId}`);
+                const data = await response.json();
+                console.log('小说详情:', data);
+                if (data.code === 200) {
+                    renderBookDetail(data.data);
+                } else {
+                    document.getElementById('bookDetail').innerHTML = '<div class="loading">' + data.msg + '</div>';
+                }
+            } catch (error) {
+                console.error('加载小说详情失败:', error);
+                document.getElementById('bookDetail').innerHTML = '<div class="loading">加载失败，请检查网络</div>';
+            }
+        }
+
+        function renderBookDetail(book) {
+            const statusText = book.status === 0 ? '连载中' : '已完结';
+            const html = `
+                <div class="book-header">
+                    <div class="book-cover-large">📖</div>
+                    <div class="book-info-large">
+                        <div class="book-title-large">${book.bookName}</div>
+                        <div class="book-meta">
+                            <span><i class="fas fa-user"></i> ${book.authorName}</span>
+                            <span><i class="fas fa-tag"></i> ${book.categoryName}</span>
+                            <span><i class="fas fa-eye"></i> ${book.visitCount || 0}阅读</span>
+                            <span><i class="fas fa-heart"></i> ${book.favoriteCount || 0}收藏</span>
+                            <span><i class="fas fa-file-alt"></i> ${book.totalWords || 0}字</span>
+                            <span><i class="fas fa-clock"></i> ${statusText}</span>
+                        </div>
+                        <div class="book-description">${book.description || '暂无简介'}</div>
+                        <div class="book-actions">
+                            <button class="btn btn-primary" onclick="readFirstChapter()">
+                                <i class="fas fa-book-open"></i> 开始阅读
+                            </button>
+                            <button class="btn btn-secondary" onclick="addToFavorite()">
+                                <i class="fas fa-star"></i> 加入书架
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('bookDetail').innerHTML = html;
+        }
+
+        async function loadChapters() {
+            try {
+                const response = await fetch(`/api/book/${bookId}/chapters`);
+                const data = await response.json();
+                console.log('章节列表:', data);
+                if (data.code === 200 && data.data && data.data.length > 0) {
+                    document.getElementById('chapterSection').style.display = 'block';
+                    const html = data.data.map(chapter => `
+                        <div class="chapter-item" onclick="readChapter(${chapter.id})">
+                            第${chapter.chapterNum}章 ${chapter.chapterName}
+                        </div>
+                    `).join('');
+                    document.getElementById('chapterList').innerHTML = html;
+                } else if (data.data && data.data.length === 0) {
+                    document.getElementById('chapterSection').style.display = 'block';
+                    document.getElementById('chapterList').innerHTML = '<div style="text-align:center;padding:30px;">暂无章节</div>';
+                }
+            } catch (error) {
+                console.error('加载章节失败:', error);
+            }
+        }
+
+        async function loadComments() {
+            try {
+                const response = await fetch(`/api/book/comment/${bookId}?pageNum=1&pageSize=20`);
+                const data = await response.json();
+                console.log('评论列表:', data);
+                if (data.code === 200 && data.data) {
+                    document.getElementById('commentSection').style.display = 'block';
+                    if (data.data.length === 0) {
+                        document.getElementById('commentList').innerHTML = '<div style="text-align: center; padding: 30px; color: #999;">暂无评论，快来抢沙发吧~</div>';
+                        return;
+                    }
+                    const html = data.data.map(comment => `
+                        <div class="comment-item">
+                            <div class="comment-user">
+                                <i class="fas fa-user-circle"></i> ${comment.nickname || comment.username}
+                            </div>
+                            <div class="comment-content">${comment.content}</div>
+                            <div class="comment-time">${new Date(comment.createTime).toLocaleString()}</div>
+                        </div>
+                    `).join('');
+                    document.getElementById('commentList').innerHTML = html;
+                }
+            } catch (error) {
+                console.error('加载评论失败:', error);
+            }
+        }
+
+        function readChapter(chapterId) {
+            window.location.href = `/chapter.html?bookId=${bookId}&chapterId=${chapterId}`;
+        }
+
+        function readFirstChapter() {
+            const firstChapter = document.querySelector('.chapter-item');
+            if (firstChapter) {
+                firstChapter.click();
+            } else {
+                alert('暂无章节，请耐心等待作者更新');
+            }
+        }
+
+        async function addToFavorite() {
+            if (!token) {
+                alert('请先登录');
+                showLoginModal();
+                return;
+            }
+            try {
+                const response = await fetch(`/api/book/favorite/add?userId=${userId}&bookId=${bookId}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.code === 200) {
+                    alert('添加成功！');
+                } else {
+                    alert(data.msg);
+                }
+            } catch (error) {
+                alert('操作失败');
+            }
+        }
+
+        async function addComment() {
+            if (!token) {
+                alert('请先登录');
+                return;
+            }
+            const content = document.getElementById('commentContent').value;
+            if (!content.trim()) {
+                alert('请输入评论内容');
+                return;
+            }
+            try {
+                const response = await fetch('/api/book/comment/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ userId: parseInt(userId), bookId: parseInt(bookId), content: content })
+                });
+                const data = await response.json();
+                if (data.code === 200) {
+                    alert('评论成功！');
+                    document.getElementById('commentContent').value = '';
+                    loadComments();
+                } else {
+                    alert(data.msg);
+                }
+            } catch (error) {
+                alert('评论失败');
+            }
+        }
+
+        function showLoginModal() {
+            alert('请返回首页点击登录按钮');
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>
