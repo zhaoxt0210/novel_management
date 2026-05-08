@@ -255,11 +255,16 @@ public class BookServiceImpl implements BookService {
     public RestResp<Map<String, Object>> searchBooks(BookSearchReqDto dto) {
         Map<String, Object> result = new HashMap<>();
         LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Book::getStatus, 0);
 
         if (dto.getKeyword() != null && !dto.getKeyword().trim().isEmpty()) {
-            wrapper.and(w -> w.like(Book::getBookName, dto.getKeyword())
-                    .or().like(Book::getAuthorName, dto.getKeyword()));
+            String keyword = dto.getKeyword().trim();
+            wrapper.and(w -> w
+                    .like(Book::getBookName, keyword)
+                    .or()
+                    .like(Book::getAuthorName, keyword)
+                    .or()
+                    .like(Book::getDescription, keyword)
+            );
         }
 
         if (dto.getCategoryId() != null) {
@@ -285,7 +290,6 @@ public class BookServiceImpl implements BookService {
         result.put("total", bookPage.getTotal());
         result.put("pageNum", dto.getPageNum());
         result.put("pageSize", dto.getPageSize());
-
         return RestResp.ok(result);
     }
 
