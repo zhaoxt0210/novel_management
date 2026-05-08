@@ -9,7 +9,6 @@ com/novel/entity/BookFavorite.class
 com/novel/entity/Chapter.class
 com/novel/mapper/AuthorApplyMapper.class
 com/novel/dto/resp/UserLoginRespDto.class
-com/novel/config/ClassicBookSupplementer.class
 com/novel/dto/resp/UserLoginRespDto$UserLoginRespDtoBuilder.class
 com/novel/dto/resp/CategoryRespDto$CategoryRespDtoBuilder.class
 com/novel/service/RankService.class
@@ -19,7 +18,6 @@ com/novel/dto/req/CommentAddReqDto.class
 com/novel/controller/front/BookshelfController.class
 com/novel/mapper/BookFavoriteMapper.class
 com/novel/mapper/ChapterMapper.class
-com/novel/config/ClassicBookSupplementer$SupplementBook.class
 com/novel/entity/BookRank.class
 com/novel/dto/resp/CategoryRespDto.class
 com/novel/dto/resp/BookshelfRespDto.class
@@ -33,7 +31,6 @@ com/novel/dto/resp/CommentRespDto$CommentRespDtoBuilder.class
 com/novel/config/MybatisPlusConfig.class
 com/novel/service/BookService.class
 com/novel/dto/resp/UserInfoRespDto$UserInfoRespDtoBuilder.class
-com/novel/config/ChapterDataInitializer.class
 com/novel/service/UserService.class
 com/novel/service/impl/AdminServiceImpl.class
 com/novel/dto/resp/ReadHistoryRespDto.class
@@ -51,7 +48,6 @@ com/novel/controller/front/UserController.class
 com/novel/dto/req/RankManageReqDto.class
 com/novel/dto/resp/UserInfoRespDto.class
 com/novel/service/AuthorService.class
-com/novel/config/WorldClassicInitializer.class
 com/novel/dto/req/ChapterAddReqDto.class
 com/novel/service/impl/BookServiceImpl.class
 com/novel/service/impl/CategoryServiceImpl.class
@@ -66,7 +62,6 @@ com/novel/controller/author/AuthorController.class
 com/novel/dto/resp/BookInfoRespDto$BookInfoRespDtoBuilder.class
 com/novel/dto/resp/ReadHistoryRespDto$ReadHistoryRespDtoBuilder.class
 com/novel/entity/Comment.class
-com/novel/config/WorldClassicInitializer$ClassicBook.class
 com/novel/mapper/ReadHistoryMapper.class
 com/novel/dto/req/UserRegisterReqDto.class
 com/novel/service/impl/AuthorServiceImpl.class

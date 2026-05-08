@@ -20,7 +20,6 @@
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/controller/front/FavoritesController.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/BookSearchReqDto.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/entity/BookRank.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/config/WorldClassicInitializer.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/controller/CategoryController.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/entity/User.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/UserInfoRespDto.java
@@ -29,7 +28,6 @@
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/UserRegisterReqDto.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/BookshelfRespDto.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/AuthorApplyReqDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/config/ClassicBookSupplementer.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/CommentAddReqDto.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/BookInfoRespDto.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/CategoryRespDto.java
@@ -68,4 +66,3 @@
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/mapper/AdminMapper.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/entity/BookFavorite.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/service/impl/AdminServiceImpl.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/config/ChapterDataInitializer.java
