@@ -571,6 +571,7 @@
                 <a href="/rank.html">排行榜</a>
                 <a href="/category.html">分类书库</a>
                 <a href="#" onclick="loadFavorites()">我的书架</a>
+                <a href="#" onclick="loadMyFavorites()">我的收藏</a>
             </div>
             <div class="user-actions" id="authSection">
                 <button class="btn btn-outline" onclick="showLoginModal()">登录</button>
@@ -1004,6 +1005,15 @@
             return;
         }
         window.location.href = '/bookshelf.html';
+    }
+
+    function loadMyFavorites() {
+        if (!token) {
+            alert('请先登录');
+            showLoginModal();
+            return;
+        }
+        window.location.href = '/favorites.html';
     }
 
     function showUserInfo() {
