@@ -38,7 +38,6 @@
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/mapper/ChapterMapper.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/security/JwtTokenProvider.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/AuthorApplyRespDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/config/CategoryNameUpdater.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/CommentRespDto.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/controller/admin/AdminController.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/service/impl/AuthorServiceImpl.java
