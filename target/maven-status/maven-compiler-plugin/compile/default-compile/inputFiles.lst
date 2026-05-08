@@ -29,6 +29,7 @@
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/UserRegisterReqDto.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/BookshelfRespDto.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/AuthorApplyReqDto.java
+/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/config/ClassicBookSupplementer.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/CommentAddReqDto.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/BookInfoRespDto.java
 /Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/CategoryRespDto.java

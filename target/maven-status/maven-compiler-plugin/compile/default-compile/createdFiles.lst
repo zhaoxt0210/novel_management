@@ -9,6 +9,7 @@ com/novel/entity/BookFavorite.class
 com/novel/entity/Chapter.class
 com/novel/mapper/AuthorApplyMapper.class
 com/novel/dto/resp/UserLoginRespDto.class
+com/novel/config/ClassicBookSupplementer.class
 com/novel/dto/resp/UserLoginRespDto$UserLoginRespDtoBuilder.class
 com/novel/dto/resp/CategoryRespDto$CategoryRespDtoBuilder.class
 com/novel/service/RankService.class
@@ -18,6 +19,7 @@ com/novel/dto/req/CommentAddReqDto.class
 com/novel/controller/front/BookshelfController.class
 com/novel/mapper/BookFavoriteMapper.class
 com/novel/mapper/ChapterMapper.class
+com/novel/config/ClassicBookSupplementer$SupplementBook.class
 com/novel/entity/BookRank.class
 com/novel/dto/resp/CategoryRespDto.class
 com/novel/dto/resp/BookshelfRespDto.class
