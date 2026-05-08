@@ -16,6 +16,7 @@ public class BookInfoRespDto {
     private String cover;
     private String description;
     private Integer status;
+    private Integer auditStatus;
     private Long visitCount;
     private Long favoriteCount;
     private Integer totalWords;

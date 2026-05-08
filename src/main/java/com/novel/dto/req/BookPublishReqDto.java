@@ -24,8 +24,8 @@ public class BookPublishReqDto {
 
     private String cover;
 
-    @NotNull(message = "发布状态不能为空")
-    private Integer publishStatus;
+    // 发布状态改为非必填，默认为0（连载中）
+    private Integer publishStatus = 0;
 
     @NotEmpty(message = "至少需要添加一个章节")
     @Valid

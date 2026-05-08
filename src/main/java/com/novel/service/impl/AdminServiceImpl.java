@@ -32,6 +32,7 @@ public class AdminServiceImpl implements AdminService {
     private final BookMapper bookMapper;
     private final CategoryMapper categoryMapper;
     private final AuthorApplyMapper authorApplyMapper;
+    private final ChapterMapper chapterMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -49,7 +50,7 @@ public class AdminServiceImpl implements AdminService {
         }
 
         String token = jwtTokenProvider.generateTokenFromUsername(username);
-        
+
         AdminLoginRespDto respDto = AdminLoginRespDto.builder()
                 .token(token)
                 .adminId(admin.getId())
@@ -57,7 +58,7 @@ public class AdminServiceImpl implements AdminService {
                 .realName(admin.getRealName())
                 .role(admin.getRole())
                 .build();
-        
+
         return RestResp.ok(respDto);
     }
 
@@ -93,19 +94,19 @@ public class AdminServiceImpl implements AdminService {
         }
         wrapper.orderByDesc(AuthorApply::getCreateTime);
         List<AuthorApply> applies = authorApplyMapper.selectList(wrapper);
-        
+
         if (applies.isEmpty()) {
             return RestResp.ok(List.of());
         }
-        
+
         List<Long> userIds = applies.stream()
                 .map(AuthorApply::getUserId)
                 .collect(Collectors.toList());
-        
+
         List<User> users = userMapper.selectBatchIds(userIds);
         Map<Long, User> userMap = users.stream()
                 .collect(Collectors.toMap(User::getId, u -> u));
-        
+
         return RestResp.ok(applies.stream().map(apply -> {
             User user = userMap.get(apply.getUserId());
             return AuthorApplyRespDto.builder()
@@ -131,17 +132,17 @@ public class AdminServiceImpl implements AdminService {
         if (apply == null) {
             return RestResp.error("申请记录不存在");
         }
-        
+
         apply.setStatus(status);
         apply.setRemark(remark);
         apply.setUpdateTime(LocalDateTime.now());
         authorApplyMapper.updateById(apply);
-        
+
         // 如果审核通过，更新用户角色为作者(1)
         if (status == 1) {
             userMapper.updateRole(apply.getUserId(), 1);
         }
-        
+
         return RestResp.ok();
     }
 
@@ -164,6 +165,54 @@ public class AdminServiceImpl implements AdminService {
         book.setStatus(2);
         bookMapper.updateById(book);
         return RestResp.ok();
+    }
+
+    // ========== 作品审核方法 ==========
+
+    @Override
+    @Transactional
+    public RestResp<Void> auditBook(Long bookId, Integer auditStatus, String remark) {
+        Book book = bookMapper.selectById(bookId);
+        if (book == null) {
+            return RestResp.error("作品不存在");
+        }
+
+        if (auditStatus < 1 || auditStatus > 3) {
+            return RestResp.error("无效的审核状态");
+        }
+
+        // 更新作品审核状态
+        book.setAuditStatus(auditStatus);
+        book.setAuditRemark(remark);
+        book.setAuditTime(LocalDateTime.now());
+
+        // 如果审核通过，同时更新章节的审核状态
+        if (auditStatus == 2) {
+            if (book.getStatus() == null) {
+                book.setStatus(0);
+            }
+
+            LambdaQueryWrapper<Chapter> chapterWrapper = new LambdaQueryWrapper<>();
+            chapterWrapper.eq(Chapter::getBookId, bookId);
+            List<Chapter> chapters = chapterMapper.selectList(chapterWrapper);
+            for (Chapter chapter : chapters) {
+                chapter.setAuditStatus(2);
+                chapter.setUpdateTime(LocalDateTime.now());
+                chapterMapper.updateById(chapter);
+            }
+        }
+
+        bookMapper.updateById(book);
+        return RestResp.ok();
+    }
+    @Override
+    public RestResp<List<BookInfoRespDto>> getPendingBooks() {
+        LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Book::getAuditStatus, 1);  // 待审核状态
+        wrapper.orderByDesc(Book::getSubmitTime);
+        List<Book> books = bookMapper.selectList(wrapper);
+
+        return RestResp.ok(books.stream().map(this::convertToBookDto).collect(Collectors.toList()));
     }
 
     @Override
@@ -189,7 +238,7 @@ public class AdminServiceImpl implements AdminService {
         if (category == null) {
             return RestResp.error("分类不存在");
         }
-        
+
         category.setName(dto.getName());
         category.setWorkDirection(dto.getWorkDirection());
         category.setSort(dto.getSort() != null ? dto.getSort() : category.getSort());
@@ -205,7 +254,7 @@ public class AdminServiceImpl implements AdminService {
         if (bookMapper.selectCount(wrapper) > 0) {
             return RestResp.error("该分类下还有小说，无法删除");
         }
-        
+
         categoryMapper.deleteById(categoryId);
         return RestResp.ok();
     }
@@ -217,17 +266,22 @@ public class AdminServiceImpl implements AdminService {
         stats.put("authorCount", userMapper.countByRole(1));
         stats.put("bookCount", bookMapper.selectCount(null));
         stats.put("adminCount", adminMapper.selectCount(null));
-        
+
+        // 审核统计
+        LambdaQueryWrapper<Book> pendingWrapper = new LambdaQueryWrapper<>();
+        pendingWrapper.eq(Book::getAuditStatus, 1);
+        stats.put("pendingBookCount", bookMapper.selectCount(pendingWrapper));
+
         // 总收藏数
         LambdaQueryWrapper<Book> bookWrapper = new LambdaQueryWrapper<>();
         List<Book> books = bookMapper.selectList(bookWrapper);
         long totalFavorite = books.stream().mapToLong(Book::getFavoriteCount).sum();
         stats.put("totalFavoriteCount", totalFavorite);
-        
+
         // 总访问数
         long totalVisit = books.stream().mapToLong(Book::getVisitCount).sum();
         stats.put("totalVisitCount", totalVisit);
-        
+
         return RestResp.ok(stats);
     }
 
@@ -237,7 +291,7 @@ public class AdminServiceImpl implements AdminService {
         if (admin == null) {
             return RestResp.error("管理员不存在");
         }
-        
+
         String encodedPassword = passwordEncoder.encode(newPassword);
         admin.setPassword(encodedPassword);
         adminMapper.updateById(admin);
@@ -260,12 +314,19 @@ public class AdminServiceImpl implements AdminService {
                 .id(book.getId())
                 .bookName(book.getBookName())
                 .authorName(book.getAuthorName())
+                .categoryName(getCategoryName(book.getCategoryId()))
                 .status(book.getStatus())
                 .visitCount(book.getVisitCount())
                 .favoriteCount(book.getFavoriteCount())
                 .totalWords(book.getTotalWords())
                 .updateTime(book.getUpdateTime())
                 .build();
+    }
+
+    private String getCategoryName(Long categoryId) {
+        if (categoryId == null) return "";
+        Category category = categoryMapper.selectById(categoryId);
+        return category != null ? category.getName() : "";
     }
 
     private CategoryRespDto convertToCategoryDto(Category category) {

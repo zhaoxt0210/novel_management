@@ -111,6 +111,10 @@
             background: #fff;
             color: #e74c3c;
         }
+        .btn-success {
+            background: #27ae60;
+            color: #fff;
+        }
         .btn-sm {
             padding: 6px 12px;
             font-size: 12px;
@@ -134,6 +138,7 @@
         .status.loading { background: #f3f7ff; color: #3a66b0; }
         .status.error { background: #fff1f0; color: #cf1322; }
         .status.success { background: #f6ffed; color: #389e0d; }
+        .status.warning { background: #fff8e1; color: #f39c12; }
         .status.hidden { display: none; }
         .chapter-list {
             margin-top: 12px;
@@ -167,27 +172,31 @@
             display: flex;
             gap: 6px;
         }
-        .chapter-form {
-            display: none;
-        }
-        .chapter-form.active {
-            display: block;
-        }
         .chapter-preview {
-            font-size: 13px;
-            color: #666;
-            line-height: 1.6;
+            flex: 1;
         }
-        .chapter-preview .preview-title {
+        .preview-title {
             font-weight: 500;
             color: #333;
             margin-bottom: 6px;
         }
-        .chapter-preview .preview-content {
+        .preview-content {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
+        }
+        .chapter-form {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+        }
+        .chapter-form.active {
+            display: block;
         }
         .cover-upload {
             border: 2px dashed #ddd;
@@ -218,25 +227,6 @@
         }
         .cover-preview.active {
             display: block;
-        }
-        .publish-status {
-            display: flex;
-            gap: 20px;
-        }
-        .radio-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-        .radio-item input[type="radio"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-        .radio-item label {
-            font-size: 14px;
-            cursor: pointer;
         }
         .category-options {
             display: flex;
@@ -269,6 +259,18 @@
             font-size: 48px;
             margin-bottom: 12px;
         }
+        .info-box {
+            background: #e8f4fd;
+            border: 1px solid #bde0fe;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #0066cc;
+        }
+        .info-box i {
+            margin-right: 8px;
+        }
         @media (max-width: 768px) {
             .btn-group { flex-direction: column; }
             .btn { width: 100%; }
@@ -286,14 +288,22 @@
 <main class="container page-wrap">
     <div id="globalStatus" class="status hidden"></div>
 
-    <form id="publishForm" class="form-card">
+    <div class="info-box">
+        <i class="fas fa-info-circle"></i>
+        <strong>发布流程说明：</strong>
+        1. 您可以先保存草稿，随时继续编辑。<br>
+        2. 作品完善后点击"提交审核"，作品将进入审核状态。<br>
+        3. 管理员审核通过后，作品会自动发布到应用上架。
+    </div>
+
+    <div class="form-card">
         <div class="card-title">
             <i class="fas fa-book"></i> 书籍信息
         </div>
 
         <div class="form-group">
             <label class="form-label required">书籍标题</label>
-            <input id="bookName" class="form-input" type="text" placeholder="请输入书名（2-50个字符，支持中文、英文、数字）">
+            <input id="bookName" class="form-input" type="text" placeholder="请输入书名（2-50个字符）">
             <div id="bookNameHint" class="form-hint">支持中文、英文及数字，长度限制为2-50个字符</div>
         </div>
 
@@ -311,22 +321,23 @@
         <div class="form-group">
             <label class="form-label">书籍简介</label>
             <textarea id="description" class="form-textarea" placeholder="请输入书籍简介（最多500个字符）"></textarea>
-            <div id="descriptionHint" class="form-hint">支持基本文本格式，最多500个字符</div>
+            <div id="descriptionHint" class="form-hint">最多500个字符</div>
         </div>
 
         <div class="form-group">
             <label class="form-label">封面图片</label>
             <div id="coverUpload" class="cover-upload">
                 <i class="fas fa-image"></i>
-                <span>点击或拖拽上传封面图片</span>
+                <span>点击上传封面图片</span>
             </div>
             <input id="coverInput" type="file" accept="image/*" style="display: none;">
             <img id="coverPreview" class="cover-preview" src="" alt="封面预览">
-            <div id="coverHint" class="form-hint">支持 JPG、PNG 格式，建议尺寸 200x270</div>
+            <div id="coverHint" class="form-hint">支持 JPG、PNG 格式，建议尺寸 200x270，不超过2MB</div>
+            <input type="hidden" id="coverUrl" value="">
         </div>
-    </form>
+    </div>
 
-    <form id="chapterForm" class="form-card">
+    <div class="form-card">
         <div class="card-title">
             <i class="fas fa-list-alt"></i> 章节管理
             <button type="button" id="addChapterBtn" class="btn btn-outline btn-sm" style="margin-left: auto;">
@@ -340,35 +351,14 @@
                 <div>暂无章节，请添加章节</div>
             </div>
         </div>
-    </form>
-
-    <form id="publishStatusForm" class="form-card">
-        <div class="card-title">
-            <i class="fas fa-publish"></i> 发布设置
-        </div>
-
-        <div class="form-group">
-            <label class="form-label required">发布状态</label>
-            <div class="publish-status">
-                <label class="radio-item">
-                    <input type="radio" name="publishStatus" value="0" checked>
-                    <span><i class="fas fa-edit"></i> 保存草稿</span>
-                </label>
-                <label class="radio-item">
-                    <input type="radio" name="publishStatus" value="1">
-                    <span><i class="fas fa-check-circle"></i> 正式发布</span>
-                </label>
-            </div>
-            <div class="form-hint">保存草稿：作品仅自己可见；正式发布：作品对所有用户可见</div>
-        </div>
-    </form>
+    </div>
 
     <div class="btn-group">
         <button type="button" id="saveDraftBtn" class="btn btn-secondary">
             <i class="fas fa-save"></i> 保存草稿
         </button>
-        <button type="button" id="publishBtn" class="btn btn-primary">
-            <i class="fas fa-rocket"></i> 正式发布
+        <button type="button" id="submitAuditBtn" class="btn btn-success">
+            <i class="fas fa-paper-plane"></i> 提交审核
         </button>
     </div>
 </main>
@@ -378,26 +368,43 @@
     let categories = [];
     let chapters = [];
     let chapterIdCounter = 1;
+    let isSubmitting = false;
 
-    function setStatus(type, text) {
+    function setStatus(type, text, autoHide = true) {
         const node = document.getElementById('globalStatus');
         node.className = 'status ' + type;
         node.textContent = text;
         node.style.display = 'flex';
+        if (autoHide) {
+            setTimeout(() => {
+                if (node.className === 'status ' + type) {
+                    node.style.display = 'none';
+                }
+            }, 4000);
+        }
     }
 
-    function hideStatus() {
-        document.getElementById('globalStatus').className = 'status hidden';
+    function getToken() {
+        return localStorage.getItem('token');
     }
 
     function ensureLogin() {
-        const token = localStorage.getItem('token');
+        const token = getToken();
         const uid = localStorage.getItem('userId');
+        const role = localStorage.getItem('role');
+
         if (!token || !uid) {
             alert('请先登录');
             window.location.href = '/index.html';
             return false;
         }
+
+        if (role !== '1') {
+            alert('您还不是作者，请先在个人中心申请成为作者');
+            window.location.href = '/user-center.html';
+            return false;
+        }
+
         userId = uid;
         return true;
     }
@@ -413,14 +420,20 @@
                 document.getElementById('categoryOptions').innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><div>加载分类失败</div></div>';
             }
         } catch (error) {
+            console.error('加载分类失败:', error);
             document.getElementById('categoryOptions').innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><div>加载分类失败</div></div>';
         }
     }
 
     function renderCategories() {
+        if (!categories.length) {
+            document.getElementById('categoryOptions').innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><div>暂无分类数据</div></div>';
+            return;
+        }
+
         const html = categories.map(cat => `
-            <div class="category-tag" data-id="${cat.id}" data-name="${cat.categoryName}">
-                ${cat.categoryName}
+            <div class="category-tag" data-id="${cat.id}" data-name="${cat.name}">
+                ${cat.name}
             </div>
         `).join('');
         document.getElementById('categoryOptions').innerHTML = html;
@@ -450,25 +463,31 @@
         const chapter = chapters.find(c => c.id === id);
         if (!chapter) return;
 
-        const item = document.querySelector(`[data-chapter-id="${id}"]`);
+        const item = document.querySelector(`.chapter-item[data-id="${id}"]`);
         if (!item) return;
 
-        item.querySelector('.chapter-preview').style.display = 'none';
-        item.querySelector('.chapter-form').classList.add('active');
+        const previewDiv = item.querySelector('.chapter-preview');
+        const formDiv = item.querySelector('.chapter-form');
 
-        item.querySelector('.edit-chapter-name').value = chapter.chapterName;
-        item.querySelector('.edit-content').value = chapter.content;
+        if (previewDiv) previewDiv.style.display = 'none';
+        if (formDiv) formDiv.classList.add('active');
+
+        const nameInput = formDiv?.querySelector('.edit-chapter-name');
+        const contentTextarea = formDiv?.querySelector('.edit-content');
+
+        if (nameInput) nameInput.value = chapter.chapterName;
+        if (contentTextarea) contentTextarea.value = chapter.content;
     }
 
     function saveChapter(id) {
-        const item = document.querySelector(`[data-chapter-id="${id}"]`);
+        const item = document.querySelector(`.chapter-item[data-id="${id}"]`);
         if (!item) return;
 
         const chapter = chapters.find(c => c.id === id);
         if (!chapter) return;
 
-        const chapterName = item.querySelector('.edit-chapter-name').value.trim();
-        const content = item.querySelector('.edit-content').value.trim();
+        const chapterName = item.querySelector('.edit-chapter-name')?.value.trim() || '';
+        const content = item.querySelector('.edit-content')?.value.trim() || '';
 
         if (!chapterName) {
             alert('请输入章节标题');
@@ -490,21 +509,31 @@
         chapter.chapterName = chapterName;
         chapter.content = content;
 
-        item.querySelector('.chapter-preview').style.display = 'block';
-        item.querySelector('.chapter-form').classList.remove('active');
+        const previewDiv = item.querySelector('.chapter-preview');
+        const formDiv = item.querySelector('.chapter-form');
 
-        item.querySelector('.preview-title').textContent = chapterName;
-        item.querySelector('.preview-content').textContent = content;
+        if (previewDiv) previewDiv.style.display = 'block';
+        if (formDiv) formDiv.classList.remove('active');
 
-        renderChapterList();
+        const previewTitle = item.querySelector('.preview-title');
+        if (previewTitle) previewTitle.textContent = chapterName;
+
+        const previewContent = item.querySelector('.preview-content');
+        if (previewContent) {
+            const contentPreview = content.length > 100 ? content.substring(0, 100) + '...' : content;
+            previewContent.textContent = contentPreview;
+        }
     }
 
     function cancelEdit(id) {
-        const item = document.querySelector(`[data-chapter-id="${id}"]`);
+        const item = document.querySelector(`.chapter-item[data-id="${id}"]`);
         if (!item) return;
 
-        item.querySelector('.chapter-preview').style.display = 'block';
-        item.querySelector('.chapter-form').classList.remove('active');
+        const previewDiv = item.querySelector('.chapter-preview');
+        const formDiv = item.querySelector('.chapter-form');
+
+        if (previewDiv) previewDiv.style.display = 'block';
+        if (formDiv) formDiv.classList.remove('active');
     }
 
     function deleteChapter(id) {
@@ -519,8 +548,10 @@
     }
 
     function renderChapterList() {
+        const container = document.getElementById('chapterList');
+
         if (chapters.length === 0) {
-            document.getElementById('chapterList').innerHTML = `
+            container.innerHTML = `
                 <div class="empty-state">
                     <i class="fas fa-file-text"></i>
                     <div>暂无章节，请添加章节</div>
@@ -529,42 +560,54 @@
             return;
         }
 
-        const html = chapters.map(chapter => `
-            <div class="chapter-item" data-chapter-id="${chapter.id}">
-                <div class="chapter-header">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span class="chapter-num">${chapter.chapterNum}</span>
-                        <span style="font-weight: 500;">${chapter.chapterName || '未命名章节'}</span>
-                    </div>
-                    <div class="chapter-actions">
-                        <button class="btn btn-outline btn-sm" onclick="editChapter('${chapter.id}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-secondary btn-sm" onclick="deleteChapter('${chapter.id}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="chapter-preview">
-                    <div class="preview-title">${chapter.chapterName || '未命名章节'}</div>
-                    <div class="preview-content">${chapter.content || '暂无内容'}</div>
-                </div>
-                <div class="chapter-form">
-                    <div class="form-group" style="margin-bottom: 12px;">
-                        <input class="form-input edit-chapter-name" type="text" placeholder="章节标题（2-30个字符）">
-                    </div>
-                    <div class="form-group" style="margin-bottom: 12px;">
-                        <textarea class="form-textarea edit-content" rows="6" placeholder="章节内容（至少20个字符）"></textarea>
-                    </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-primary btn-sm" onclick="saveChapter('${chapter.id}')">保存</button>
-                        <button class="btn btn-secondary btn-sm" onclick="cancelEdit('${chapter.id}')">取消</button>
-                    </div>
-                </div>
-            </div>
-        `).join('');
+        const html = chapters.map(chapter => {
+            const contentPreview = chapter.content && chapter.content.length > 100
+                ? chapter.content.substring(0, 100) + '...'
+                : (chapter.content || '暂无内容');
 
-        document.getElementById('chapterList').innerHTML = html;
+            return `
+                <div class="chapter-item" data-id="${chapter.id}">
+                    <div class="chapter-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span class="chapter-num">${chapter.chapterNum}</span>
+                            <span class="preview-title" style="font-weight: 500;">${escapeHtml(chapter.chapterName || '未命名章节')}</span>
+                        </div>
+                        <div class="chapter-actions">
+                            <button class="btn btn-outline btn-sm" onclick="editChapter('${chapter.id}')">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="deleteChapter('${chapter.id}')">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chapter-preview">
+                        <div class="preview-content">${escapeHtml(contentPreview)}</div>
+                    </div>
+                    <div class="chapter-form">
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <input class="form-input edit-chapter-name" type="text" placeholder="章节标题（2-30个字符）" value="${escapeHtml(chapter.chapterName)}">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <textarea class="form-textarea edit-content" rows="6" placeholder="章节内容（至少20个字符）">${escapeHtml(chapter.content)}</textarea>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-primary btn-sm" onclick="saveChapter('${chapter.id}')">保存</button>
+                            <button class="btn btn-secondary btn-sm" onclick="cancelEdit('${chapter.id}')">取消</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = html;
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     function validateForm() {
@@ -588,12 +631,12 @@
 
         for (let i = 0; i < chapters.length; i++) {
             const chapter = chapters[i];
-            if (!chapter.chapterName.trim()) {
+            if (!chapter.chapterName || !chapter.chapterName.trim()) {
                 errors.push(`第${i + 1}章：请输入章节标题`);
             } else if (chapter.chapterName.length < 2 || chapter.chapterName.length > 30) {
                 errors.push(`第${i + 1}章：章节标题长度必须在2-30个字符之间`);
             }
-            if (!chapter.content.trim()) {
+            if (!chapter.content || !chapter.content.trim()) {
                 errors.push(`第${i + 1}章：请输入章节内容`);
             } else if (chapter.content.length < 20) {
                 errors.push(`第${i + 1}章：章节内容至少需要20个字符`);
@@ -603,105 +646,200 @@
         return errors;
     }
 
-    async function submitPublish(publishStatus) {
+    function getBookData() {
+        const bookName = document.getElementById('bookName').value.trim();
+        const activeCategory = document.querySelector('.category-tag.active');
+        const categoryId = activeCategory ? parseInt(activeCategory.dataset.id) : null;
+        const description = document.getElementById('description').value.trim();
+        const cover = document.getElementById('coverUrl').value;
+
+        const chapterItems = chapters.map(c => ({
+            chapterName: c.chapterName,
+            content: c.content
+        }));
+
+        return {
+            bookName,
+            categoryId,
+            description,
+            cover,
+            publishStatus: 0,
+            chapters: chapterItems
+        };
+    }
+
+    async function saveDraft() {
         const errors = validateForm();
         if (errors.length > 0) {
             alert(errors.join('\n'));
             return;
         }
 
-        setStatus('loading', '正在发布...');
+        if (isSubmitting) return;
+        isSubmitting = true;
+        setStatus('loading', '正在保存草稿...', false);
 
         try {
-            const bookName = document.getElementById('bookName').value.trim();
-            const categoryId = Number(document.querySelector('.category-tag.active').dataset.id);
-            const description = document.getElementById('description').value.trim();
-            const cover = document.getElementById('coverPreview').src || '';
+            const bookData = getBookData();
+            const data = { ...bookData, auditStatus: 0 };
 
-            const chapterItems = chapters.map(c => ({
-                chapterName: c.chapterName,
-                content: c.content
-            }));
-
-            const data = {
-                bookName,
-                categoryId,
-                description,
-                cover,
-                publishStatus,
-                chapters: chapterItems
-            };
-
-            const resp = await fetch(`/api/author/${userId}/book/publish`, {
+            const token = getToken();
+            const response = await fetch(`/api/author/${userId}/book/draft`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    'Authorization': 'Bearer ' + token
                 },
                 body: JSON.stringify(data)
             });
 
-            const result = await resp.json();
+            const result = await response.json();
 
             if (result.code === 200) {
-                setStatus('success', `发布成功！作品《${result.data.bookName}》已成功发布，包含 ${result.data.chapterCount} 个章节`);
+                setStatus('success', `草稿保存成功！作品《${result.data.bookName}》已保存，可继续完善后提交审核`);
                 setTimeout(() => {
-                    window.location.href = `/book.html?id=${result.data.bookId}`;
+                    window.location.href = `/my-works.html`;
                 }, 2000);
             } else {
-                setStatus('error', result.msg || '发布失败');
+                setStatus('error', result.msg || '保存失败');
             }
         } catch (error) {
-            console.error(error);
-            setStatus('error', '发布失败，请稍后重试');
+            console.error('保存草稿失败:', error);
+            setStatus('error', '保存失败，请稍后重试：' + error.message);
+        } finally {
+            isSubmitting = false;
         }
     }
 
-    document.getElementById('addChapterBtn').addEventListener('click', addChapter);
+    async function submitForAudit() {
+        const errors = validateForm();
+        if (errors.length > 0) {
+            alert(errors.join('\n'));
+            return;
+        }
 
-    document.getElementById('saveDraftBtn').addEventListener('click', () => {
-        submitPublish(0);
-    });
+        if (!confirm('提交审核后，作品将进入审核流程，审核期间无法修改。确认提交吗？')) {
+            return;
+        }
 
-    document.getElementById('publishBtn').addEventListener('click', () => {
-        submitPublish(1);
-    });
+        if (isSubmitting) return;
+        isSubmitting = true;
+        setStatus('loading', '正在提交审核...', false);
 
-    document.getElementById('coverUpload').addEventListener('click', () => {
-        document.getElementById('coverInput').click();
-    });
+        try {
+            const bookData = getBookData();
+            const data = { ...bookData, auditStatus: 1 };
 
-    document.getElementById('coverInput').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
+            const token = getToken();
+            const response = await fetch(`/api/author/${userId}/book/submit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.code === 200) {
+                setStatus('success', `提交成功！作品《${result.data.bookName}》已提交审核，请耐心等待管理员审核。`, false);
+                setTimeout(() => {
+                    window.location.href = `/my-works.html`;
+                }, 3000);
+            } else {
+                setStatus('error', result.msg || '提交失败');
+            }
+        } catch (error) {
+            console.error('提交审核失败:', error);
+            setStatus('error', '提交失败，请稍后重试：' + error.message);
+        } finally {
+            isSubmitting = false;
+        }
+    }
+
+    async function uploadCover(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('/api/upload/cover', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+
+            if (result.code === 200 && result.data && result.data.url) {
+                document.getElementById('coverUrl').value = result.data.url;
+                return true;
+            } else {
+                setStatus('error', result.msg || '上传失败');
+                return false;
+            }
+        } catch (error) {
+            console.error('上传失败:', error);
+            setStatus('error', '上传失败，请稍后重试');
+            return false;
+        }
+    }
+
+    window.onload = function() {
+        if (!ensureLogin()) return;
+
+        document.getElementById('addChapterBtn').addEventListener('click', () => addChapter());
+        document.getElementById('saveDraftBtn').addEventListener('click', saveDraft);
+        document.getElementById('submitAuditBtn').addEventListener('click', submitForAudit);
+
+        const coverUpload = document.getElementById('coverUpload');
+        const coverInput = document.getElementById('coverInput');
+        const coverPreview = document.getElementById('coverPreview');
+
+        coverUpload.addEventListener('click', () => {
+            coverInput.click();
+        });
+
+        coverInput.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                alert('请选择图片文件');
+                return;
+            }
+            if (file.size > 2 * 1024 * 1024) {
+                alert('图片大小不能超过2MB');
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = function(event) {
-                const preview = document.getElementById('coverPreview');
-                preview.src = event.target.result;
-                preview.classList.add('active');
+                coverPreview.src = event.target.result;
+                coverPreview.classList.add('active');
             };
             reader.readAsDataURL(file);
-        }
-    });
 
-    document.getElementById('bookName').addEventListener('blur', function() {
-        const value = this.value.trim();
-        const hint = document.getElementById('bookNameHint');
-        if (!value) {
-            hint.className = 'form-hint error';
-            hint.textContent = '请输入书籍标题';
-        } else if (value.length < 2 || value.length > 50) {
-            hint.className = 'form-hint error';
-            hint.textContent = '标题长度必须在2-50个字符之间';
-        } else {
-            hint.className = 'form-hint success';
-            hint.textContent = '✓ 标题格式正确';
-        }
-    });
+            const success = await uploadCover(file);
+            if (!success) {
+                coverPreview.classList.remove('active');
+            }
+        });
 
-    window.onload = async function() {
-        if (!ensureLogin()) return;
-        await loadCategories();
+        document.getElementById('bookName').addEventListener('blur', function() {
+            const value = this.value.trim();
+            const hint = document.getElementById('bookNameHint');
+            if (!value) {
+                hint.className = 'form-hint error';
+                hint.textContent = '请输入书籍标题';
+            } else if (value.length < 2 || value.length > 50) {
+                hint.className = 'form-hint error';
+                hint.textContent = '标题长度必须在2-50个字符之间';
+            } else {
+                hint.className = 'form-hint success';
+                hint.textContent = '✓ 标题格式正确';
+            }
+        });
+
+        loadCategories();
         addChapter();
     };
 </script>

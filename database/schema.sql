@@ -178,3 +178,34 @@ create table novel_system.user
 )
     comment '用户表';
 
+
+
+ALTER TABLE book MODIFY COLUMN cover LONGTEXT;
+-- 修改 book 表，添加审核相关字段
+
+-- 修改 book 表，添加审核相关字段
+ALTER TABLE book
+ADD COLUMN audit_status INT DEFAULT 0 COMMENT '审核状态: 0-草稿,1-待审核,2-已发布,3-已驳回',
+ADD COLUMN audit_remark VARCHAR(500) COMMENT '审核备注',
+ADD COLUMN submit_time DATETIME COMMENT '提交审核时间',
+ADD COLUMN audit_time DATETIME COMMENT '审核时间',
+MODIFY COLUMN status INT DEFAULT 0 COMMENT '发布状态: 0-连载中,1-已完结,2-已下架';
+
+
+-- 修改 chapter 表，添加审核状态
+ALTER TABLE chapter
+ADD COLUMN audit_status INT DEFAULT 0 COMMENT '审核状态: 0-草稿,1-待审核,2-已发布,3-已驳回';
+
+-- 更新现有数据：将已有作品设置为已发布状态
+UPDATE book SET audit_status = 2 WHERE audit_status IS NULL;
+-- 创建作品审核记录表（可选，用于记录审核历史）
+CREATE TABLE IF NOT EXISTS book_audit_log (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    book_id BIGINT NOT NULL COMMENT '作品ID',
+    audit_status INT NOT NULL COMMENT '审核状态',
+    audit_remark VARCHAR(500) COMMENT '审核备注',
+    operator_id BIGINT COMMENT '操作员ID',
+    operator_name VARCHAR(50) COMMENT '操作员名称',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_book_id (book_id)
+) COMMENT '作品审核日志';
