@@ -3,9 +3,11 @@ package com.novel.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.novel.common.resp.RestResp;
 import com.novel.dto.req.BookAddReqDto;
+import com.novel.dto.req.BookPublishReqDto;
 import com.novel.dto.req.ChapterAddReqDto;
 import com.novel.dto.req.ChapterUpdateReqDto;
 import com.novel.dto.resp.BookInfoRespDto;
+import com.novel.dto.resp.BookPublishRespDto;
 import com.novel.dto.resp.ChapterRespDto;
 import com.novel.entity.Book;
 import com.novel.entity.Chapter;
@@ -58,6 +60,85 @@ public class AuthorServiceImpl implements AuthorService {
         
         bookMapper.insert(book);
         return RestResp.ok();
+    }
+
+    @Override
+    @Transactional
+    public RestResp<BookPublishRespDto> publishBookWithChapters(Long authorId, BookPublishReqDto dto) {
+        User user = userMapper.selectById(authorId);
+        if (user == null) {
+            return RestResp.error("用户不存在");
+        }
+        if (user.getRole() != 1) {
+            return RestResp.error("您不是作者，请先申请作者资格");
+        }
+
+        LambdaQueryWrapper<Book> nameWrapper = new LambdaQueryWrapper<>();
+        nameWrapper.eq(Book::getBookName, dto.getBookName());
+        nameWrapper.eq(Book::getAuthorId, authorId);
+        if (bookMapper.exists(nameWrapper)) {
+            return RestResp.error("您已发布过同名作品");
+        }
+
+        Book book = new Book();
+        book.setBookName(dto.getBookName());
+        book.setCategoryId(dto.getCategoryId());
+        book.setAuthorId(authorId);
+        book.setAuthorName(user.getNickname());
+        book.setDescription(dto.getDescription());
+        book.setCover(dto.getCover());
+        book.setStatus(dto.getPublishStatus());
+        book.setVisitCount(0L);
+        book.setFavoriteCount(0L);
+        book.setTotalWords(0);
+        book.setCreateTime(LocalDateTime.now());
+        book.setUpdateTime(LocalDateTime.now());
+
+        bookMapper.insert(book);
+        Long bookId = book.getId();
+
+        int totalWords = 0;
+        String lastChapterName = null;
+        Long lastChapterId = null;
+
+        for (int i = 0; i < dto.getChapters().size(); i++) {
+            BookPublishReqDto.ChapterItem item = dto.getChapters().get(i);
+            
+            String safeContent = sanitizeContent(item.getContent());
+            
+            Chapter chapter = new Chapter();
+            chapter.setBookId(bookId);
+            chapter.setChapterNum(i + 1);
+            chapter.setChapterName(item.getChapterName());
+            chapter.setContent(safeContent);
+            chapter.setWordCount(safeContent.length());
+            chapter.setStatus(dto.getPublishStatus());
+            chapter.setCreateTime(LocalDateTime.now());
+            chapter.setUpdateTime(LocalDateTime.now());
+
+            chapterMapper.insert(chapter);
+
+            totalWords += chapter.getWordCount();
+            lastChapterId = chapter.getId();
+            lastChapterName = chapter.getChapterName();
+        }
+
+        book.setTotalWords(totalWords);
+        book.setLastChapterId(lastChapterId);
+        book.setLastChapterName(lastChapterName);
+        book.setUpdateTime(LocalDateTime.now());
+        bookMapper.updateById(book);
+
+        return RestResp.ok(new BookPublishRespDto(bookId, dto.getBookName(), dto.getChapters().size()));
+    }
+
+    private String sanitizeContent(String content) {
+        if (content == null) {
+            return "";
+        }
+        return content.replaceAll("<script[^>]*>.*?</script>", "")
+                      .replaceAll("<iframe[^>]*>.*?</iframe>", "")
+                      .replaceAll("javascript:", "");
     }
 
     @Override

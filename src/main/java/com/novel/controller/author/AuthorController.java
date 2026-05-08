@@ -2,9 +2,11 @@ package com.novel.controller.author;
 
 import com.novel.common.resp.RestResp;
 import com.novel.dto.req.BookAddReqDto;
+import com.novel.dto.req.BookPublishReqDto;
 import com.novel.dto.req.ChapterAddReqDto;
 import com.novel.dto.req.ChapterUpdateReqDto;
 import com.novel.dto.resp.BookInfoRespDto;
+import com.novel.dto.resp.BookPublishRespDto;
 import com.novel.dto.resp.ChapterRespDto;
 import com.novel.service.AuthorService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,6 +30,12 @@ public class AuthorController {
     @PostMapping("/{authorId}/book")
     public RestResp<Void> publishBook(@PathVariable Long authorId, @Valid @RequestBody BookAddReqDto dto) {
         return authorService.publishBook(authorId, dto);
+    }
+
+    @Operation(summary = "发布小说（含章节）")
+    @PostMapping("/{authorId}/book/publish")
+    public RestResp<BookPublishRespDto> publishBookWithChapters(@PathVariable Long authorId, @Valid @RequestBody BookPublishReqDto dto) {
+        return authorService.publishBookWithChapters(authorId, dto);
     }
 
     @Operation(summary = "发布章节")
