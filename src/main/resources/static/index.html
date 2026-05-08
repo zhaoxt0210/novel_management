@@ -577,6 +577,7 @@
             <div class="user-actions" id="authSection">
                 <button class="btn btn-outline" onclick="showLoginModal()">登录</button>
                 <button class="btn btn-primary" onclick="showRegisterModal()">注册</button>
+                <button class="btn btn-outline" onclick="showAdminLoginModal()" style="margin-left: 5px;">管理员登录</button>
             </div>
             <div class="user-dropdown" id="userSection" style="display: none;">
                 <div class="user-avatar" id="userAvatar">读</div>
@@ -700,6 +701,24 @@
                 <input type="email" id="regEmail" placeholder="邮箱 (选填)">
             </div>
             <button class="btn btn-primary" style="width: 100%;" onclick="register()">注册</button>
+        </div>
+    </div>
+</div>
+
+<div id="adminLoginModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header" style="background: linear-gradient(135deg, #2c3e50, #34495e);">
+            管理员登录
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <input type="text" id="adminUsername" placeholder="管理员用户名">
+            </div>
+            <div class="form-group">
+                <input type="password" id="adminPassword" placeholder="管理员密码">
+            </div>
+            <button class="btn btn-primary" style="width: 100%; background: linear-gradient(135deg, #2c3e50, #34495e);" onclick="adminLogin()">登录</button>
         </div>
     </div>
 </div>
@@ -1025,6 +1044,41 @@
         document.querySelectorAll('.modal').forEach(modal => {
             modal.style.display = 'none';
         });
+    }
+
+    function showAdminLoginModal() {
+        document.getElementById('adminLoginModal').style.display = 'flex';
+    }
+
+    async function adminLogin() {
+        const username = document.getElementById('adminUsername').value;
+        const password = document.getElementById('adminPassword').value;
+
+        if (!username || !password) {
+            alert('请填写用户名和密码');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/admin/login?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+            if (data.code === 200) {
+                localStorage.setItem('token', data.data.token);
+                localStorage.setItem('username', data.data.username);
+                localStorage.setItem('adminId', data.data.adminId);
+                localStorage.setItem('role', '2');
+                alert('管理员登录成功！');
+                closeModal();
+                window.location.href = '/admin/author-audit.html';
+            } else {
+                alert(data.msg);
+            }
+        } catch (error) {
+            alert('登录失败，请稍后重试');
+        }
     }
 
     function loadFavorites() {

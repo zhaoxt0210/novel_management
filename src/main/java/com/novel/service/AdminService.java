@@ -2,6 +2,7 @@ package com.novel.service;
 
 import com.novel.common.resp.RestResp;
 import com.novel.dto.req.CategoryAddReqDto;
+import com.novel.dto.resp.AdminLoginRespDto;
 import com.novel.dto.resp.AuthorApplyRespDto;
 import com.novel.dto.resp.BookInfoRespDto;
 import com.novel.dto.resp.CategoryRespDto;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface AdminService {
-    RestResp<Void> adminLogin(String username, String password);
+    RestResp<AdminLoginRespDto> adminLogin(String username, String password);
     
     // 用户管理
     RestResp<List<UserInfoRespDto>> listAllUsers();
@@ -34,4 +35,6 @@ public interface AdminService {
     
     // 统计
     RestResp<Map<String, Object>> getStatistics();
+    
+    RestResp<Void> resetPassword(Long adminId, String newPassword);
 }

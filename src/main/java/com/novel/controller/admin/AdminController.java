@@ -2,6 +2,7 @@ package com.novel.controller.admin;
 
 import com.novel.common.resp.RestResp;
 import com.novel.dto.req.CategoryAddReqDto;
+import com.novel.dto.resp.AdminLoginRespDto;
 import com.novel.dto.resp.AuthorApplyRespDto;
 import com.novel.dto.resp.BookInfoRespDto;
 import com.novel.dto.resp.CategoryRespDto;
@@ -26,7 +27,7 @@ public class AdminController {
 
     @Operation(summary = "管理员登录")
     @PostMapping("/login")
-    public RestResp<Void> adminLogin(@RequestParam String username, @RequestParam String password) {
+    public RestResp<AdminLoginRespDto> adminLogin(@RequestParam String username, @RequestParam String password) {
         return adminService.adminLogin(username, password);
     }
 
@@ -113,5 +114,12 @@ public class AdminController {
     @GetMapping("/statistics")
     public RestResp<Map<String, Object>> getStatistics() {
         return adminService.getStatistics();
+    }
+
+    // ========== 密码重置 ==========
+    @Operation(summary = "重置管理员密码")
+    @PutMapping("/{adminId}/password")
+    public RestResp<Void> resetPassword(@PathVariable Long adminId, @RequestParam String newPassword) {
+        return adminService.resetPassword(adminId, newPassword);
     }
 }

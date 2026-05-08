@@ -3,12 +3,14 @@ package com.novel.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.novel.common.resp.RestResp;
 import com.novel.dto.req.CategoryAddReqDto;
+import com.novel.dto.resp.AdminLoginRespDto;
 import com.novel.dto.resp.AuthorApplyRespDto;
 import com.novel.dto.resp.BookInfoRespDto;
 import com.novel.dto.resp.CategoryRespDto;
 import com.novel.dto.resp.UserInfoRespDto;
 import com.novel.entity.*;
 import com.novel.mapper.*;
+import com.novel.security.JwtTokenProvider;
 import com.novel.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,9 +33,10 @@ public class AdminServiceImpl implements AdminService {
     private final CategoryMapper categoryMapper;
     private final AuthorApplyMapper authorApplyMapper;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Override
-    public RestResp<Void> adminLogin(String username, String password) {
+    public RestResp<AdminLoginRespDto> adminLogin(String username, String password) {
         LambdaQueryWrapper<Admin> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Admin::getUsername, username);
         Admin admin = adminMapper.selectOne(wrapper);
@@ -44,7 +47,18 @@ public class AdminServiceImpl implements AdminService {
         if (admin.getStatus() != 1) {
             return RestResp.error("账号已被禁用");
         }
-        return RestResp.ok();
+
+        String token = jwtTokenProvider.generateTokenFromUsername(username);
+        
+        AdminLoginRespDto respDto = AdminLoginRespDto.builder()
+                .token(token)
+                .adminId(admin.getId())
+                .username(admin.getUsername())
+                .realName(admin.getRealName())
+                .role(admin.getRole())
+                .build();
+        
+        return RestResp.ok(respDto);
     }
 
     @Override
@@ -215,6 +229,19 @@ public class AdminServiceImpl implements AdminService {
         stats.put("totalVisitCount", totalVisit);
         
         return RestResp.ok(stats);
+    }
+
+    @Override
+    public RestResp<Void> resetPassword(Long adminId, String newPassword) {
+        Admin admin = adminMapper.selectById(adminId);
+        if (admin == null) {
+            return RestResp.error("管理员不存在");
+        }
+        
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        admin.setPassword(encodedPassword);
+        adminMapper.updateById(admin);
+        return RestResp.ok();
     }
 
     private UserInfoRespDto convertToUserDto(User user) {
