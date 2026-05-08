@@ -246,20 +246,8 @@
                         readProgress: progress
                     })
                 });
-                
-                recordReadHistory(userId);
             } catch (error) {
                 console.error('更新阅读进度失败:', error);
-            }
-        }
-
-        async function recordReadHistory(userId) {
-            try {
-                await fetch(`/api/book/read/record?userId=${userId}&chapterId=${chapterId}`, {
-                    method: 'POST'
-                });
-            } catch (error) {
-                console.error('记录阅读历史失败:', error);
             }
         }
 

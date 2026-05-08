@@ -11,13 +11,18 @@ public class BookFavorite {
     private Long id;
     private Long userId;
     private Long bookId;
-    
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
-    
+
     private Long lastReadChapterId;
     private Integer lastReadChapterNum;
     private String lastReadChapterName;
     private Integer readProgress;
     private LocalDateTime lastReadTime;
+
+    /**
+     * 类型：1-书架 2-收藏
+     */
+    private Integer type;
 }

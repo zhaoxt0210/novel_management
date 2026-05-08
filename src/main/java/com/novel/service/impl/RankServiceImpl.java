@@ -5,6 +5,7 @@ import com.novel.common.resp.RestResp;
 import com.novel.dto.resp.RankBookRespDto;
 import com.novel.entity.Book;
 import com.novel.entity.BookRank;
+import com.novel.mapper.BookFavoriteMapper;
 import com.novel.mapper.BookMapper;
 import com.novel.mapper.BookRankMapper;
 import com.novel.service.RankService;
@@ -14,22 +15,34 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class RankServiceImpl implements RankService {
 
+    private static final List<Integer> SUPPORTED_RANK_TYPES = Arrays.asList(1, 2);
+
     private final BookRankMapper bookRankMapper;
     private final BookMapper bookMapper;
+    private final BookFavoriteMapper bookFavoriteMapper;
 
     @Override
     public RestResp<List<RankBookRespDto>> getRankList(Integer rankType, Integer limit) {
         LambdaQueryWrapper<BookRank> wrapper = new LambdaQueryWrapper<>();
-        if (rankType != null && rankType > 0) {
+        if (rankType != null) {
+            if (!isSupportedRankType(rankType)) {
+                return RestResp.error("仅支持点击榜和收藏榜");
+            }
             wrapper.eq(BookRank::getRankType, rankType);
+        } else {
+            wrapper.in(BookRank::getRankType, SUPPORTED_RANK_TYPES);
         }
         wrapper.orderByAsc(BookRank::getRankNum);
         if (limit != null && limit > 0) {
@@ -49,6 +62,8 @@ public class RankServiceImpl implements RankService {
         List<Book> books = bookMapper.selectBatchIds(bookIds);
         Map<Long, Book> bookMap = books.stream()
                 .collect(Collectors.toMap(Book::getId, b -> b));
+
+        Map<Long, Long> favoriteCountMap = queryFavoriteCountMap(bookIds);
         
         return RestResp.ok(ranks.stream().map(rank -> {
             Book book = bookMap.get(rank.getBookId());
@@ -63,7 +78,7 @@ public class RankServiceImpl implements RankService {
                     .description(book.getDescription())
                     .totalWords(book.getTotalWords())
                     .visitCount(book.getVisitCount())
-                    .favoriteCount(book.getFavoriteCount())
+                    .favoriteCount(favoriteCountMap.getOrDefault(book.getId(), 0L))
                     .rating(book.getRating() != null ? book.getRating().intValue() : null)
                     .status(book.getStatus())
                     .rankNum(rank.getRankNum())
@@ -76,9 +91,8 @@ public class RankServiceImpl implements RankService {
     @Override
     public RestResp<List<RankBookRespDto>> getAllRankTypes(Integer limit) {
         List<RankBookRespDto> allRanks = new ArrayList<>();
-        
-        List<Integer> rankTypes = List.of(1, 2, 3, 4, 5);
-        for (Integer rankType : rankTypes) {
+
+        for (Integer rankType : SUPPORTED_RANK_TYPES) {
             RestResp<List<RankBookRespDto>> result = getRankList(rankType, limit);
             if (result.getCode() == 200 && result.getData() != null) {
                 allRanks.addAll(result.getData());
@@ -91,6 +105,10 @@ public class RankServiceImpl implements RankService {
     @Override
     @Transactional
     public RestResp<Void> addToRank(Long bookId, Integer rankType, Integer rankNum) {
+        if (!isSupportedRankType(rankType)) {
+            return RestResp.error("仅支持点击榜和收藏榜");
+        }
+
         Book book = bookMapper.selectById(bookId);
         if (book == null) {
             return RestResp.error("书籍不存在");
@@ -120,8 +138,13 @@ public class RankServiceImpl implements RankService {
     public RestResp<Void> removeFromRank(Long bookId, Integer rankType) {
         LambdaQueryWrapper<BookRank> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(BookRank::getBookId, bookId);
-        if (rankType != null && rankType > 0) {
+        if (rankType != null) {
+            if (!isSupportedRankType(rankType)) {
+                return RestResp.error("仅支持点击榜和收藏榜");
+            }
             wrapper.eq(BookRank::getRankType, rankType);
+        } else {
+            wrapper.in(BookRank::getRankType, SUPPORTED_RANK_TYPES);
         }
         
         bookRankMapper.delete(wrapper);
@@ -131,6 +154,10 @@ public class RankServiceImpl implements RankService {
     @Override
     @Transactional
     public RestResp<Void> updateRankOrder(Long bookId, Integer rankType, Integer rankNum) {
+        if (!isSupportedRankType(rankType)) {
+            return RestResp.error("仅支持点击榜和收藏榜");
+        }
+
         LambdaQueryWrapper<BookRank> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(BookRank::getBookId, bookId)
                 .eq(BookRank::getRankType, rankType);
@@ -150,24 +177,17 @@ public class RankServiceImpl implements RankService {
     @Override
     @Transactional
     public RestResp<Void> autoGenerateRank(Integer rankType, Integer limit) {
+        if (!isSupportedRankType(rankType)) {
+            return RestResp.error("仅支持点击榜和收藏榜");
+        }
+
         LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Book::getStatus, 0);
-        
-        switch (rankType != null ? rankType : 1) {
-            case 1:
-                wrapper.orderByDesc(Book::getVisitCount);
-                break;
-            case 2:
-                wrapper.orderByDesc(Book::getFavoriteCount);
-                break;
-            case 3:
-                wrapper.orderByDesc(Book::getRating);
-                break;
-            case 4:
-                wrapper.orderByDesc(Book::getUpdateTime);
-                break;
-            default:
-                wrapper.orderByDesc(Book::getVisitCount);
+
+        if (rankType == 1) {
+            wrapper.orderByDesc(Book::getVisitCount);
+        } else {
+            wrapper.orderByDesc(Book::getFavoriteCount);
         }
         
         wrapper.last("LIMIT " + (limit != null ? limit : 50));
@@ -189,5 +209,49 @@ public class RankServiceImpl implements RankService {
         }
         
         return RestResp.ok();
+    }
+
+    private boolean isSupportedRankType(Integer rankType) {
+        return rankType != null && SUPPORTED_RANK_TYPES.contains(rankType);
+    }
+
+    private Map<Long, Long> queryFavoriteCountMap(List<Long> bookIds) {
+        if (bookIds == null || bookIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        try {
+            List<Map<String, Object>> countRows = bookFavoriteMapper.countByBookIds(bookIds);
+            if (countRows == null || countRows.isEmpty()) {
+                return Collections.emptyMap();
+            }
+            Map<Long, Long> favoriteCountMap = new HashMap<>();
+            for (Map<String, Object> row : countRows) {
+                if (row == null) {
+                    continue;
+                }
+                Long bookId = parseLong(row.get("bookId"));
+                Long favoriteCount = parseLong(row.get("favoriteCount"));
+                if (bookId != null) {
+                    favoriteCountMap.put(bookId, favoriteCount != null ? favoriteCount : 0L);
+                }
+            }
+            return favoriteCountMap;
+        } catch (Exception ex) {
+            return Collections.emptyMap();
+        }
+    }
+
+    private Long parseLong(Object value) {
+        if (Objects.isNull(value)) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        try {
+            return Long.parseLong(String.valueOf(value));
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 }

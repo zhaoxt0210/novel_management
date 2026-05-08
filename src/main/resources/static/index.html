@@ -18,26 +18,6 @@
             color: #333;
         }
 
-        /* 顶部导航栏 */
-        .top-bar {
-            background: #2c3e50;
-            color: #ecf0f1;
-            padding: 8px 0;
-            font-size: 12px;
-        }
-
-        .top-bar .container {
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .top-bar a {
-            color: #ecf0f1;
-            text-decoration: none;
-            margin-left: 20px;
-        }
-
-        /* 主头部 */
         .header {
             background: #fff;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
@@ -137,7 +117,6 @@
             color: white;
         }
 
-        /* 搜索区域 */
         .search-section {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 50px 0;
@@ -191,7 +170,6 @@
             transform: scale(1.05);
         }
 
-        /* 分类标签 */
         .category-tabs {
             background: white;
             padding: 20px 0;
@@ -220,7 +198,6 @@
             color: white;
         }
 
-        /* 小说列表 */
         .books-section {
             padding: 40px 0;
         }
@@ -249,6 +226,10 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 25px;
+        }
+
+        .books-grid.hot-recommend {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
         }
 
         .book-card {
@@ -331,7 +312,6 @@
             gap: 5px;
         }
 
-        /* 排行榜 */
         .rank-section {
             background: white;
             border-radius: 12px;
@@ -387,7 +367,6 @@
             color: #999;
         }
 
-        /* 登录模态框 */
         .modal {
             display: none;
             position: fixed;
@@ -465,7 +444,6 @@
             color: white;
         }
 
-        /* 用户下拉菜单 */
         .user-dropdown {
             position: relative;
             cursor: pointer;
@@ -485,17 +463,18 @@
 
         .dropdown-menu {
             position: absolute;
-            top: 50px;
+            top: 100%;
             right: 0;
             background: white;
             border-radius: 8px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
             width: 200px;
             display: none;
-            z-index: 100;
+            z-index: 1100;
         }
 
-        .user-dropdown:hover .dropdown-menu {
+        .user-dropdown:hover .dropdown-menu,
+        .user-dropdown.open .dropdown-menu {
             display: block;
         }
 
@@ -512,7 +491,6 @@
             color: #e74c3c;
         }
 
-        /* 页脚 */
         .footer {
             background: #2c3e50;
             color: #ecf0f1;
@@ -562,490 +540,489 @@
             .books-grid {
                 grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
             }
+            .books-grid.hot-recommend {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
             .rank-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .books-grid.hot-recommend {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <!-- 顶部条 -->
-    <div class="top-bar">
-        <div class="container">
-            <div>📚 海量小说，畅快阅读</div>
-            <div>
-                <a href="#">帮助中心</a>
-                <a href="#">客户端下载</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- 主头部 -->
-    <div class="header">
-        <div class="container">
-            <div class="nav">
-                <div class="logo">
-                    <div class="logo-icon">📖</div>
-                    <div>
-                        <div class="logo-text">墨韵书阁</div>
-                        <div class="logo-slogan">悦读·悦享</div>
-                    </div>
-                </div>
-                <div class="nav-menu">
-                    <a href="#" class="active" onclick="loadBooks('home')">首页</a>
-                    <a href="/rank.html">排行榜</a>
-                    <a href="/category.html">分类书库</a>
-                    <a href="#" onclick="loadFavorites()">我的书架</a>
-                    <a href="#" onclick="loadHistory()">阅读历史</a>
-                </div>
-                <div class="user-actions" id="authSection">
-                    <button class="btn btn-outline" onclick="showLoginModal()">登录</button>
-                    <button class="btn btn-primary" onclick="showRegisterModal()">注册</button>
-                </div>
-                <div class="user-dropdown" id="userSection" style="display: none;">
-                    <div class="user-avatar" id="userAvatar">读</div>
-                    <div class="dropdown-menu">
-                        <a href="#" onclick="showUserInfo()">个人中心</a>
-                        <a href="#" onclick="showMyBooks()">我的作品</a>
-                        <a href="#" onclick="logout()">退出登录</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 搜索区域 -->
-    <div class="search-section">
-        <div class="container">
-            <div class="search-title">发现好书，遇见世界</div>
-            <div class="search-subtitle">百万读者推荐的优质小说，等你来读</div>
-            <div class="search-box">
-                <input type="text" id="searchKeyword" class="search-input" placeholder="搜索小说、作者..." onkeypress="if(event.keyCode==13) searchBooks()">
-                <button class="search-btn" onclick="searchBooks()">
-                    <i class="fas fa-search"></i> 搜索
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 分类标签 -->
-    <div class="category-tabs">
-        <div class="container">
-            <div class="tabs" id="categoryTabs">
-                <div class="tab active" onclick="filterByCategory(null)">热门推荐</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 小说列表 -->
-    <div class="books-section">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title" id="sectionTitle">热门推荐</h2>
-                <a href="#" class="section-more" id="moreLink" onclick="goToCategoryPage()">查看更多 →</a>
-            </div>
-            <div id="booksList" class="books-grid">
-                <div style="text-align: center; padding: 50px;">加载中...</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 排行榜区域 -->
+<div class="header">
     <div class="container">
-        <div class="rank-section" id="rankSection">
-            <div class="rank-header">🔥 热门排行榜</div>
-            <div class="rank-list" id="rankList">
-                <div style="text-align: center; padding: 30px;">加载中...</div>
+        <div class="nav">
+            <div class="logo">
+                <div class="logo-icon">📖</div>
+                <div>
+                    <div class="logo-text">墨韵书阁</div>
+                    <div class="logo-slogan">悦读·悦享</div>
+                </div>
+            </div>
+            <div class="nav-menu">
+                <a href="#" class="active" onclick="loadBooks('home')">首页</a>
+                <a href="/rank.html">排行榜</a>
+                <a href="/category.html">分类书库</a>
+                <a href="#" onclick="loadFavorites()">我的书架</a>
+            </div>
+            <div class="user-actions" id="authSection">
+                <button class="btn btn-outline" onclick="showLoginModal()">登录</button>
+                <button class="btn btn-primary" onclick="showRegisterModal()">注册</button>
+            </div>
+            <div class="user-dropdown" id="userSection" style="display: none;">
+                <div class="user-avatar" id="userAvatar">读</div>
+                <div class="dropdown-menu">
+                    <a href="#" onclick="showUserInfo()">个人中心</a>
+                    <a href="#" onclick="showMyBooks()">我的作品</a>
+                    <a href="#" onclick="logout()">退出登录</a>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- 页脚 -->
-    <div class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h4>关于我们</h4>
-                    <p>墨韵书阁是国内领先的小说阅读平台，致力于为读者提供优质的阅读体验。</p>
-                </div>
-                <div class="footer-section">
-                    <h4>热门分类</h4>
-                    <a href="#">玄幻奇幻</a>
-                    <a href="#">都市言情</a>
-                    <a href="#">武侠仙侠</a>
-                    <a href="#">科幻悬疑</a>
-                </div>
-                <div class="footer-section">
-                    <h4>帮助中心</h4>
-                    <a href="#">常见问题</a>
-                    <a href="#">充值中心</a>
-                    <a href="#">作家专区</a>
-                    <a href="#">联系我们</a>
-                </div>
-                <div class="footer-section">
-                    <h4>官方渠道</h4>
-                    <a href="#"><i class="fab fa-weixin"></i> 微信公众号</a>
-                    <a href="#"><i class="fab fa-weibo"></i> 官方微博</a>
-                    <a href="#"><i class="fab fa-qq"></i> QQ群</a>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>© 2024 墨韵书阁 | 享受阅读的乐趣 | 鄂ICP备12345678号</p>
-            </div>
+<div class="search-section">
+    <div class="container">
+        <div class="search-title">发现好书，遇见世界</div>
+        <div class="search-subtitle">百万读者推荐的优质小说，等你来读</div>
+        <div class="search-box">
+            <input type="text" id="searchKeyword" class="search-input" placeholder="搜索小说、作者..." onkeypress="if(event.keyCode==13) searchBooks()">
+            <button class="search-btn" onclick="searchBooks()">
+                <i class="fas fa-search"></i> 搜索
+            </button>
         </div>
     </div>
+</div>
 
-    <!-- 登录模态框 -->
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                欢迎回来
-                <span class="close-modal" onclick="closeModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <input type="text" id="loginUsername" placeholder="用户名">
-                </div>
-                <div class="form-group">
-                    <input type="password" id="loginPassword" placeholder="密码">
-                </div>
-                <button class="btn btn-primary" style="width: 100%;" onclick="login()">登录</button>
-            </div>
-            <div class="modal-footer">
-                <a href="#" onclick="closeModal(); showRegisterModal();" style="color: #e74c3c;">还没有账号？立即注册</a>
-            </div>
+<div class="category-tabs">
+    <div class="container">
+        <div class="tabs" id="categoryTabs">
+            <div class="tab active" onclick="filterByCategory(null)">热门推荐</div>
         </div>
     </div>
+</div>
 
-    <!-- 注册模态框 -->
-    <div id="registerModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                注册新账号
-                <span class="close-modal" onclick="closeModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <input type="text" id="regUsername" placeholder="用户名 (3-50位)">
-                </div>
-                <div class="form-group">
-                    <input type="password" id="regPassword" placeholder="密码 (6-100位)">
-                </div>
-                <div class="form-group">
-                    <input type="text" id="regNickname" placeholder="昵称">
-                </div>
-                <div class="form-group">
-                    <input type="email" id="regEmail" placeholder="邮箱 (选填)">
-                </div>
-                <button class="btn btn-primary" style="width: 100%;" onclick="register()">注册</button>
-            </div>
+<div class="books-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title" id="sectionTitle">热门推荐</h2>
+            <a href="#" class="section-more" id="moreLink" onclick="goToCategoryPage()">查看更多 →</a>
+        </div>
+        <div id="booksList" class="books-grid">
+            <div style="text-align: center; padding: 50px;">加载中...</div>
         </div>
     </div>
+</div>
 
-    <script>
-        let currentUser = null;
-        let token = null;
-        let currentCategory = null;
-        let currentRankType = 'visit';
+<div class="container">
+    <div class="rank-section" id="rankSection">
+        <div class="rank-header">🔥 热门排行榜</div>
+        <div class="rank-list" id="rankList">
+            <div style="text-align: center; padding: 30px;">加载中...</div>
+        </div>
+    </div>
+</div>
 
-        // 页面加载
-        window.onload = function() {
-            document.getElementById('moreLink').style.display = 'none';
-            loadBooks();
-            loadCategories();
-            loadRanking();
-            checkLoginStatus();
-        };
+<div class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>关于我们</h4>
+                <p>墨韵书阁是国内领先的小说阅读平台，致力于为读者提供优质的阅读体验。</p>
+            </div>
+            <div class="footer-section">
+                <h4>热门分类</h4>
+                <a href="#">玄幻奇幻</a>
+                <a href="#">都市言情</a>
+                <a href="#">武侠仙侠</a>
+                <a href="#">科幻悬疑</a>
+            </div>
+            <div class="footer-section">
+                <h4>官方渠道</h4>
+                <a href="#"><i class="fab fa-weixin"></i> 微信公众号</a>
+                <a href="#"><i class="fab fa-weibo"></i> 官方微博</a>
+                <a href="#"><i class="fab fa-qq"></i> QQ群</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 墨韵书阁 | 享受阅读的乐趣 | 鄂ICP备12345678号</p>
+        </div>
+    </div>
+</div>
 
-        // 检查登录状态
-        function checkLoginStatus() {
-            token = localStorage.getItem('token');
-            const username = localStorage.getItem('username');
-            if (token && username) {
-                currentUser = { username: username, role: localStorage.getItem('role') };
-                document.getElementById('authSection').style.display = 'none';
-                document.getElementById('userSection').style.display = 'block';
-                document.getElementById('userAvatar').innerText = username.charAt(0).toUpperCase();
-            }
+<div id="loginModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            欢迎回来
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <input type="text" id="loginUsername" placeholder="用户名">
+            </div>
+            <div class="form-group">
+                <input type="password" id="loginPassword" placeholder="密码">
+            </div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="login()">登录</button>
+        </div>
+        <div class="modal-footer">
+            <a href="#" onclick="closeModal(); showRegisterModal();" style="color: #e74c3c;">还没有账号？立即注册</a>
+        </div>
+    </div>
+</div>
+
+<div id="registerModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            注册新账号
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <input type="text" id="regUsername" placeholder="用户名 (3-50位)">
+            </div>
+            <div class="form-group">
+                <input type="password" id="regPassword" placeholder="密码 (6-100位)">
+            </div>
+            <div class="form-group">
+                <input type="text" id="regNickname" placeholder="昵称">
+            </div>
+            <div class="form-group">
+                <input type="email" id="regEmail" placeholder="邮箱 (选填)">
+            </div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="register()">注册</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentUser = null;
+    let token = null;
+    let currentCategory = null;
+    let currentRankType = 'visit';
+
+    window.onload = function() {
+        document.getElementById('moreLink').style.display = 'inline-block';
+        loadBooks();
+        loadCategories();
+        loadRanking();
+        checkLoginStatus();
+        bindUserDropdownEvents();
+    };
+
+    function bindUserDropdownEvents() {
+        const userSection = document.getElementById('userSection');
+        if (!userSection) return;
+
+        userSection.addEventListener('mouseenter', function() {
+            userSection.classList.add('open');
+        });
+
+        userSection.addEventListener('mouseleave', function() {
+            userSection.classList.remove('open');
+        });
+
+        const dropdownMenu = userSection.querySelector('.dropdown-menu');
+        dropdownMenu.addEventListener('click', function() {
+            userSection.classList.remove('open');
+        });
+    }
+
+    function checkLoginStatus() {
+        token = localStorage.getItem('token');
+        const username = localStorage.getItem('username');
+        if (token && username) {
+            currentUser = { username: username, role: localStorage.getItem('role') };
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('userSection').style.display = 'block';
+            document.getElementById('userAvatar').innerText = username.charAt(0).toUpperCase();
         }
+    }
 
-        // 加载小说列表
-        async function loadBooks(type = 'home') {
-            try {
-                let url = '/api/book/home';
-                if (currentCategory) {
-                    url = `/api/book/category/${currentCategory}?pageNum=1&pageSize=3`;
-                }
-                const response = await fetch(url);
-                const data = await response.json();
-                if (data.code === 200) {
-                    renderBooks(data.data);
-                }
-            } catch (error) {
-                console.error('加载失败:', error);
-                document.getElementById('booksList').innerHTML = '<div style="text-align: center; padding: 50px;">加载失败，请刷新重试</div>';
-            }
-        }
-
-        // 加载分类
-        async function loadCategories() {
-            try {
-                const response = await fetch('/api/category/list');
-                const data = await response.json();
-                if (data.code === 200) {
-                    const tabsHtml = '<div class="tab active" onclick="filterByCategory(null)">热门推荐</div>' +
-                        data.data.map(cat => `<div class="tab" onclick="filterByCategory(${cat.id})">${cat.name}</div>`).join('');
-                    document.getElementById('categoryTabs').innerHTML = tabsHtml;
-                }
-            } catch (error) {
-                console.error('加载分类失败:', error);
-            }
-        }
-
-        // 按分类筛选
-        function filterByCategory(categoryId) {
-            currentCategory = categoryId;
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            if (categoryId) {
-                document.getElementById('moreLink').style.display = 'inline-block';
-                const categoryName = event.target.textContent;
-                document.getElementById('sectionTitle').textContent = categoryName;
-            } else {
-                document.getElementById('moreLink').style.display = 'none';
-                document.getElementById('sectionTitle').textContent = '热门推荐';
-            }
-            
-            loadBooks();
-        }
-        
-        function goToCategoryPage() {
+    async function loadBooks(type = 'home') {
+        try {
+            let url = '/api/book/home';
             if (currentCategory) {
-                window.location.href = `/category.html?id=${currentCategory}`;
-            } else {
-                window.location.href = '/category.html';
+                url = `/api/book/category/${currentCategory}?pageNum=1&pageSize=3`;
             }
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.code === 200) {
+                const books = Array.isArray(data.data) ? data.data : (data.data && data.data.list ? data.data.list : []);
+                renderBooks(currentCategory ? books : books.slice(0, 3));
+            }
+        } catch (error) {
+            console.error('加载失败:', error);
+            document.getElementById('booksList').innerHTML = '<div style="text-align: center; padding: 50px;">加载失败，请刷新重试</div>';
+        }
+    }
+
+    async function loadCategories() {
+        try {
+            const response = await fetch('/api/category/list');
+            const data = await response.json();
+            if (data.code === 200) {
+                const tabsHtml = '<div class="tab active" onclick="filterByCategory(null)">热门推荐</div>' +
+                    data.data.map(cat => `<div class="tab" onclick="filterByCategory(${cat.id})">${cat.name}</div>`).join('');
+                document.getElementById('categoryTabs').innerHTML = tabsHtml;
+            }
+        } catch (error) {
+            console.error('加载分类失败:', error);
+        }
+    }
+
+    function filterByCategory(categoryId) {
+        currentCategory = categoryId;
+        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        event.target.classList.add('active');
+
+        if (categoryId) {
+            document.getElementById('moreLink').style.display = 'inline-block';
+            const categoryName = event.target.textContent;
+            document.getElementById('sectionTitle').textContent = categoryName;
+        } else {
+            document.getElementById('moreLink').style.display = 'inline-block';
+            document.getElementById('sectionTitle').textContent = '热门推荐';
         }
 
-        // 加载排行榜
-        async function loadRanking() {
-            try {
-                const response = await fetch('/api/book/rank/visit?limit=9');
-                const data = await response.json();
-                if (data.code === 200 && data.data) {
-                    const ranksHtml = `
-                        <div class="rank-list">
-                            ${data.data.slice(0, 3).map((book, index) => `
-                                <div class="rank-item" onclick="viewBook(${book.id})">
-                                    <div class="rank-number">${index + 1}</div>
-                                    <div class="rank-info">
-                                        <div class="rank-title">${book.bookName}</div>
-                                        <div class="rank-author">${book.authorName}</div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <div class="rank-list" style="margin-top: 10px;">
-                            ${data.data.slice(3, 6).map((book, index) => `
-                                <div class="rank-item" onclick="viewBook(${book.id})">
-                                    <div class="rank-number">${index + 4}</div>
-                                    <div class="rank-info">
-                                        <div class="rank-title">${book.bookName}</div>
-                                        <div class="rank-author">${book.authorName}</div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <div class="rank-list" style="margin-top: 10px;">
-                            ${data.data.slice(6, 9).map((book, index) => `
-                                <div class="rank-item" onclick="viewBook(${book.id})">
-                                    <div class="rank-number">${index + 7}</div>
-                                    <div class="rank-info">
-                                        <div class="rank-title">${book.bookName}</div>
-                                        <div class="rank-author">${book.authorName}</div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                    document.getElementById('rankList').innerHTML = ranksHtml;
-                }
-            } catch (error) {
-                console.error('加载排行榜失败:', error);
-            }
+        loadBooks();
+    }
+
+    function goToCategoryPage() {
+        if (currentCategory) {
+            window.location.href = `/category.html?id=${currentCategory}`;
+        } else {
+            window.location.href = '/category.html';
         }
+    }
 
-        // 渲染小说列表
-        function renderBooks(books) {
-            if (!books || books.length === 0) {
-                document.getElementById('booksList').innerHTML = '<div style="text-align: center; padding: 50px;">暂无小说</div>';
-                return;
-            }
-
-            const html = books.map(book => `
-                <div class="book-card" onclick="viewBook(${book.id})">
-                    <div class="book-cover">
-                        📖
-                        <div class="book-status">${book.status === 0 ? '连载中' : '已完结'}</div>
+    async function loadRanking() {
+        try {
+            const response = await fetch('/api/book/rank/visit?limit=9');
+            const data = await response.json();
+            if (data.code === 200 && data.data) {
+                const ranksHtml = `
+                    <div class="rank-list">
+                        ${data.data.slice(0, 3).map((book, index) => `
+                            <div class="rank-item" onclick="viewBook(${book.id})">
+                                <div class="rank-number">${index + 1}</div>
+                                <div class="rank-info">
+                                    <div class="rank-title">${book.bookName}</div>
+                                    <div class="rank-author">${book.authorName}</div>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
-                    <div class="book-info">
-                        <div class="book-title">${book.bookName}</div>
-                        <div class="book-author">${book.authorName}</div>
-                        <div class="book-desc">${book.description || '暂无简介'}</div>
-                        <div class="book-stats">
-                            <span><i class="fas fa-eye"></i> ${book.visitCount || 0}</span>
-                            <span><i class="fas fa-heart"></i> ${book.favoriteCount || 0}</span>
-                            <span><i class="fas fa-file-alt"></i> ${book.totalWords || 0}字</span>
-                        </div>
+                    <div class="rank-list" style="margin-top: 10px;">
+                        ${data.data.slice(3, 6).map((book, index) => `
+                            <div class="rank-item" onclick="viewBook(${book.id})">
+                                <div class="rank-number">${index + 4}</div>
+                                <div class="rank-info">
+                                    <div class="rank-title">${book.bookName}</div>
+                                    <div class="rank-author">${book.authorName}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="rank-list" style="margin-top: 10px;">
+                        ${data.data.slice(6, 9).map((book, index) => `
+                            <div class="rank-item" onclick="viewBook(${book.id})">
+                                <div class="rank-number">${index + 7}</div>
+                                <div class="rank-info">
+                                    <div class="rank-title">${book.bookName}</div>
+                                    <div class="rank-author">${book.authorName}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                document.getElementById('rankList').innerHTML = ranksHtml;
+            }
+        } catch (error) {
+            console.error('加载排行榜失败:', error);
+        }
+    }
+
+    function renderBooks(books) {
+        const booksListEl = document.getElementById('booksList');
+        booksListEl.classList.toggle('hot-recommend', !currentCategory);
+
+        if (!books || books.length === 0) {
+            booksListEl.innerHTML = '<div style="text-align: center; padding: 50px;">暂无小说</div>';
+            return;
+        }
+
+        const html = books.map(book => `
+            <div class="book-card" onclick="viewBook(${book.id})">
+                <div class="book-cover">
+                    📖
+                    <div class="book-status">${book.status === 0 ? '连载中' : '已完结'}</div>
+                </div>
+                <div class="book-info">
+                    <div class="book-title">${escapeHtml(book.bookName)}</div>
+                    <div class="book-author">${escapeHtml(book.authorName)}</div>
+                    <div class="book-desc">${escapeHtml(book.description || '暂无简介')}</div>
+                    <div class="book-stats">
+                        <span><i class="fas fa-eye"></i> ${book.visitCount || 0}</span>
+                        <span><i class="fas fa-star"></i> ${book.favoriteCount || 0}</span>
+                        <span><i class="fas fa-file-alt"></i> ${book.totalWords || 0}字</span>
                     </div>
                 </div>
-            `).join('');
+            </div>
+        `).join('');
 
-            document.getElementById('booksList').innerHTML = html;
+        booksListEl.innerHTML = html;
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    async function searchBooks() {
+        const keyword = document.getElementById('searchKeyword').value;
+        if (!keyword) {
+            loadBooks();
+            return;
         }
 
-        // 搜索小说
-        async function searchBooks() {
-            const keyword = document.getElementById('searchKeyword').value;
-            if (!keyword) {
-                loadBooks();
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/book/search', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ keyword: keyword, pageNum: 1, pageSize: 20 })
-                });
-                const data = await response.json();
-                if (data.code === 200) {
-                    renderBooks(data.data.list);
-                    document.getElementById('sectionTitle').innerHTML = `搜索结果: "${keyword}"`;
-                }
-            } catch (error) {
-                console.error('搜索失败:', error);
-            }
-        }
-
-        // 查看小说详情
-        function viewBook(bookId) {
-            window.location.href = `/book.html?id=${bookId}`;
-        }
-
-        // 登录
-        async function login() {
-            const username = document.getElementById('loginUsername').value;
-            const password = document.getElementById('loginPassword').value;
-
-            if (!username || !password) {
-                alert('请填写用户名和密码');
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/user/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                const data = await response.json();
-                if (data.code === 200) {
-                    localStorage.setItem('token', data.data.token);
-                    localStorage.setItem('username', data.data.username);
-                    localStorage.setItem('userId', data.data.userId);
-                    localStorage.setItem('role', data.data.role);
-                    alert('登录成功！');
-                    closeModal();
-                    location.reload();
-                } else {
-                    alert(data.msg);
-                }
-            } catch (error) {
-                alert('登录失败，请稍后重试');
-            }
-        }
-
-        // 注册
-        async function register() {
-            const username = document.getElementById('regUsername').value;
-            const password = document.getElementById('regPassword').value;
-            const nickname = document.getElementById('regNickname').value;
-            const email = document.getElementById('regEmail').value;
-
-            if (!username || !password) {
-                alert('请填写用户名和密码');
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/user/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, nickname, email })
-                });
-                const data = await response.json();
-                if (data.code === 200) {
-                    alert('注册成功！请登录');
-                    closeModal();
-                    showLoginModal();
-                } else {
-                    alert(data.msg);
-                }
-            } catch (error) {
-                alert('注册失败，请稍后重试');
-            }
-        }
-
-        // 退出登录
-        function logout() {
-            localStorage.clear();
-            alert('已退出登录');
-            location.reload();
-        }
-
-        // 显示模态框
-        function showLoginModal() {
-            document.getElementById('loginModal').style.display = 'flex';
-        }
-
-        function showRegisterModal() {
-            document.getElementById('registerModal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.querySelectorAll('.modal').forEach(modal => {
-                modal.style.display = 'none';
+        try {
+            const response = await fetch('/api/book/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ keyword: keyword, pageNum: 1, pageSize: 20 })
             });
-        }
-
-        // 占位函数
-        function loadFavorites() {
-            if (!token) {
-                alert('请先登录');
-                showLoginModal();
-                return;
+            const data = await response.json();
+            if (data.code === 200) {
+                renderBooks(data.data.list);
+                document.getElementById('sectionTitle').innerHTML = `搜索结果: "${keyword}"`;
             }
-            window.location.href = '/bookshelf.html';
+        } catch (error) {
+            console.error('搜索失败:', error);
+        }
+    }
+
+    function viewBook(bookId) {
+        window.location.href = `/book.html?id=${bookId}`;
+    }
+
+    async function login() {
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+
+        if (!username || !password) {
+            alert('请填写用户名和密码');
+            return;
         }
 
-        function loadHistory() {
-            if (!token) {
-                alert('请先登录');
-                showLoginModal();
-                return;
+        try {
+            const response = await fetch('/api/user/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await response.json();
+            if (data.code === 200) {
+                localStorage.setItem('token', data.data.token);
+                localStorage.setItem('username', data.data.username);
+                localStorage.setItem('userId', data.data.userId);
+                localStorage.setItem('role', data.data.role);
+                alert('登录成功！');
+                closeModal();
+                location.reload();
+            } else {
+                alert(data.msg);
             }
-            alert('阅读历史功能开发中');
+        } catch (error) {
+            alert('登录失败，请稍后重试');
+        }
+    }
+
+    async function register() {
+        const username = document.getElementById('regUsername').value;
+        const password = document.getElementById('regPassword').value;
+        const nickname = document.getElementById('regNickname').value;
+        const email = document.getElementById('regEmail').value;
+
+        if (!username || !password) {
+            alert('请填写用户名和密码');
+            return;
         }
 
-        function showUserInfo() {
-            alert('个人中心功能开发中');
+        try {
+            const response = await fetch('/api/user/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password, nickname, email })
+            });
+            const data = await response.json();
+            if (data.code === 200) {
+                alert('注册成功！请登录');
+                closeModal();
+                showLoginModal();
+            } else {
+                alert(data.msg);
+            }
+        } catch (error) {
+            alert('注册失败，请稍后重试');
         }
+    }
 
-        function showMyBooks() {
-            alert('我的作品功能开发中');
+    function logout() {
+        localStorage.clear();
+        alert('已退出登录');
+        location.reload();
+    }
+
+    function showLoginModal() {
+        document.getElementById('loginModal').style.display = 'flex';
+    }
+
+    function showRegisterModal() {
+        document.getElementById('registerModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+        });
+    }
+
+    function loadFavorites() {
+        if (!token) {
+            alert('请先登录');
+            showLoginModal();
+            return;
         }
-    </script>
+        window.location.href = '/bookshelf.html';
+    }
+
+    function showUserInfo() {
+        if (!token) {
+            alert('请先登录');
+            showLoginModal();
+            return;
+        }
+        window.location.href = '/user-center.html';
+    }
+
+    function showMyBooks() {
+        if (!token) {
+            alert('请先登录');
+            showLoginModal();
+            return;
+        }
+        window.location.href = '/my-works.html';
+    }
+</script>
 </body>
 </html>

@@ -306,163 +306,212 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="container">
-            <div class="nav">
-                <div class="logo">
-                    <a href="/">
-                        <i class="fas fa-crown"></i>
-                        <span>墨韵书阁</span>
-                    </a>
-                </div>
-                <a href="/" class="back-btn">
-                    <i class="fas fa-home"></i> 返回首页
+<div class="header">
+    <div class="container">
+        <div class="nav">
+            <div class="logo">
+                <a href="/">
+                    <i class="fas fa-crown"></i>
+                    <span>墨韵书阁</span>
                 </a>
             </div>
+            <a href="/" class="back-btn">
+                <i class="fas fa-home"></i> 返回首页
+            </a>
         </div>
     </div>
+</div>
 
-    <div class="page-content">
-        <div class="container">
-            <h1 class="page-title">🏆 排行榜</h1>
-            <p class="page-subtitle">精选热门小说，领略阅读魅力</p>
-            
-            <div class="rank-tabs">
-                <div class="rank-tab active" data-type="1" onclick="switchRankType(1)">
-                    <i class="fas fa-fire"></i> 点击榜
-                </div>
-                <div class="rank-tab" data-type="2" onclick="switchRankType(2)">
-                    <i class="fas fa-heart"></i> 收藏榜
-                </div>
-                <div class="rank-tab" data-type="3" onclick="switchRankType(3)">
-                    <i class="fas fa-star"></i> 评分榜
-                </div>
-                <div class="rank-tab" data-type="4" onclick="switchRankType(4)">
-                    <i class="fas fa-clock"></i> 更新榜
-                </div>
-                <div class="rank-tab" data-type="5" onclick="switchRankType(5)">
-                    <i class="fas fa-thumbs-up"></i> 推荐榜
-                </div>
+<div class="page-content">
+    <div class="container">
+        <h1 class="page-title">🏆 排行榜</h1>
+        <p class="page-subtitle">精选热门小说，领略阅读魅力</p>
+
+        <div class="rank-tabs">
+            <div class="rank-tab active" data-type="1" onclick="switchRankType(1)">
+                <i class="fas fa-fire"></i> 点击榜
             </div>
+            <div class="rank-tab" data-type="2" onclick="switchRankType(2)">
+                <i class="fas fa-star"></i> 收藏榜
+            </div>
+        </div>
 
-            <div id="rankListContainer" class="rank-list-container active">
-                <div class="loading">
-                    <i class="fas fa-spinner fa-spin"></i> 加载中...
-                </div>
+        <div id="rankListContainer" class="rank-list-container active">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i> 加载中...
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        const rankTypeNames = {
-            1: '点击榜',
-            2: '收藏榜',
-            3: '评分榜',
-            4: '更新榜',
-            5: '推荐榜'
-        };
+<script>
+    let currentRankType = 1;
 
-        let currentRankType = 1;
-        let rankData = {};
+    window.onload = function() {
+        loadRankData(1);
+    };
 
-        window.onload = function() {
-            loadRankData(1);
-        };
+    function switchRankType(type) {
+        currentRankType = type;
 
-        function switchRankType(type) {
-            currentRankType = type;
-            
-            document.querySelectorAll('.rank-tab').forEach(tab => {
-                tab.classList.remove('active');
-                if (parseInt(tab.dataset.type) === type) {
-                    tab.classList.add('active');
-                }
-            });
-            
-            if (rankData[type]) {
-                renderRankList(type);
+        document.querySelectorAll('.rank-tab').forEach(tab => {
+            tab.classList.remove('active');
+            if (parseInt(tab.dataset.type) === type) {
+                tab.classList.add('active');
+            }
+        });
+
+        loadRankData(type);
+    }
+
+    async function loadRankData(type) {
+        const container = document.getElementById('rankListContainer');
+        container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>';
+        container.classList.add('active');
+
+        try {
+            // 根据排行榜类型调用不同接口获取排序后的数据
+            let url;
+            if (type === 1) {
+                // 点击榜：按阅读量排序
+                url = '/api/book/rank/visit?limit=50';
             } else {
-                loadRankData(type);
+                // 收藏榜：按收藏量排序
+                url = '/api/book/rank/favorite?limit=50';
             }
-        }
 
-        async function loadRankData(type) {
-            const container = document.getElementById('rankListContainer');
-            container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>';
-            container.classList.add('active');
-            
-            try {
-                const response = await fetch(`/api/admin/rank/list?rankType=${type}&limit=50`);
-                const data = await response.json();
-                
-                if (data.code === 200) {
-                    rankData[type] = data.data || [];
-                    renderRankList(type);
-                } else {
-                    showError(data.msg || '加载失败');
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.code === 200) {
+                const books = data.data || [];
+                renderRankList(books, type);
+            } else if (data.code === 500 && data.msg && data.msg.includes('不存在')) {
+                // 如果接口不存在，尝试使用备用接口
+                await loadRankFromAdminApi(type);
+            } else {
+                showError(data.msg || '加载失败');
+            }
+        } catch (error) {
+            console.error('加载排行榜失败:', error);
+            // 备用方案：尝试使用管理接口
+            await loadRankFromAdminApi(type);
+        }
+    }
+
+    async function loadRankFromAdminApi(type) {
+        try {
+            const response = await fetch(`/api/admin/rank/list?rankType=${type}&limit=50`);
+            const data = await response.json();
+
+            if (data.code === 200) {
+                const books = data.data || [];
+                // 根据类型进行排序（如果后端返回的数据未排序）
+                let sortedBooks = [...books];
+                if (type === 1) {
+                    // 点击榜：按访问量降序排序
+                    sortedBooks.sort((a, b) => (b.visitCount || 0) - (a.visitCount || 0));
+                } else if (type === 2) {
+                    // 收藏榜：按收藏量降序排序
+                    sortedBooks.sort((a, b) => (b.favoriteCount || 0) - (a.favoriteCount || 0));
                 }
-            } catch (error) {
-                console.error('加载排行榜失败:', error);
-                showError('网络错误，请检查网络连接');
+                renderRankList(sortedBooks, type);
+            } else {
+                showError(data.msg || '加载失败');
             }
+        } catch (error) {
+            console.error('加载排行榜失败:', error);
+            showError('网络错误，请检查网络连接');
         }
+    }
 
-        function renderRankList(type) {
-            const container = document.getElementById('rankListContainer');
-            const books = rankData[type] || [];
-            
-            if (books.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">📊</div>
-                        <div class="empty-title">暂无排行榜数据</div>
-                        <p style="color: rgba(255,255,255,0.5); margin-bottom: 20px;">该排行榜暂时没有数据</p>
-                        <button class="refresh-btn" onclick="loadRankData(${type})">
-                            <i class="fas fa-redo"></i> 刷新试试
-                        </button>
-                    </div>
-                `;
-                return;
-            }
+    function renderRankList(books, type) {
+        const container = document.getElementById('rankListContainer');
 
-            const html = books.map((book, index) => `
-                <div class="rank-item" onclick="viewBook(${book.bookId})">
-                    <div class="rank-number">${index + 1}</div>
-                    <div class="book-cover">📖</div>
-                    <div class="book-info">
-                        <div class="book-title">${book.bookName}</div>
-                        <div class="book-author">👤 ${book.authorName}</div>
-                        <div class="book-stats">
-                            <span><i class="fas fa-eye"></i> ${book.visitCount || 0}</span>
-                            <span><i class="fas fa-heart"></i> ${book.favoriteCount || 0}</span>
-                            <span><i class="fas fa-star"></i> ${book.rating || 0}</span>
-                            <span><i class="fas fa-file-alt"></i> ${book.totalWords || 0}字</span>
-                        </div>
-                        ${book.description ? `<div class="book-desc">${book.description}</div>` : ''}
-                    </div>
-                </div>
-            `).join('');
-
-            container.innerHTML = html;
-        }
-
-        function viewBook(bookId) {
-            window.location.href = `/book.html?id=${bookId}`;
-        }
-
-        function showError(message) {
-            const container = document.getElementById('rankListContainer');
+        if (books.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-icon">⚠️</div>
-                    <div class="empty-title">加载失败</div>
-                    <p style="color: rgba(255,255,255,0.5); margin-bottom: 20px;">${message}</p>
-                    <button class="refresh-btn" onclick="loadRankData(${currentRankType})">
-                        <i class="fas fa-redo"></i> 重试
+                    <div class="empty-icon">📊</div>
+                    <div class="empty-title">暂无排行榜数据</div>
+                    <p style="color: rgba(255,255,255,0.5); margin-bottom: 20px;">该排行榜暂时没有数据</p>
+                    <button class="refresh-btn" onclick="loadRankData(${type})">
+                        <i class="fas fa-redo"></i> 刷新试试
                     </button>
                 </div>
             `;
+            return;
         }
-    </script>
+
+        const rankTypeName = type === 1 ? '点击量' : '收藏量';
+        const hasRankNum = books.some(book => book.rankNum !== undefined && book.rankNum !== null);
+
+        const html = books.map((book, index) => {
+            const displayRank = hasRankNum && book.rankNum ? book.rankNum : index + 1;
+            let rankClass = '';
+            if (index === 0) rankClass = 'gold';
+            else if (index === 1) rankClass = 'silver';
+            else if (index === 2) rankClass = 'bronze';
+
+            // 获取统计数据
+            const statValue = type === 1 ? (book.visitCount || 0) : (book.favoriteCount || 0);
+            const statIcon = type === 1 ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-star"></i>';
+
+            return `
+                <div class="rank-item" onclick="viewBook(${book.bookId || book.id})">
+                    <div class="rank-number">${displayRank}</div>
+                    <div class="book-cover">📖</div>
+                    <div class="book-info">
+                        <div class="book-title">${escapeHtml(book.bookName)}</div>
+                        <div class="book-author">👤 ${escapeHtml(book.authorName)}</div>
+                        <div class="book-stats">
+                            ${type === 1 ?
+                                `<span><i class="fas fa-eye"></i> ${statValue} 阅读</span>` :
+                                `<span><i class="fas fa-star"></i> ${statValue} 收藏</span>`
+                            }
+                            <span><i class="fas fa-file-alt"></i> ${formatWords(book.totalWords)}字</span>
+                            ${book.rating ? `<span><i class="fas fa-star-half-alt"></i> ${book.rating}</span>` : ''}
+                        </div>
+                        ${book.description ? `<div class="book-desc">${escapeHtml(book.description)}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = html;
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function formatWords(words) {
+        if (!words) return '0';
+        if (words >= 10000) {
+            return (words / 10000).toFixed(1) + '万';
+        }
+        return words.toString();
+    }
+
+    function viewBook(bookId) {
+        window.location.href = `/book.html?id=${bookId}`;
+    }
+
+    function showError(message) {
+        const container = document.getElementById('rankListContainer');
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">⚠️</div>
+                <div class="empty-title">加载失败</div>
+                <p style="color: rgba(255,255,255,0.5); margin-bottom: 20px;">${message}</p>
+                <button class="refresh-btn" onclick="loadRankData(${currentRankType})">
+                    <i class="fas fa-redo"></i> 重试
+                </button>
+            </div>
+        `;
+    }
+</script>
 </body>
 </html>

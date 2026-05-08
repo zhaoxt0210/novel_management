@@ -297,3 +297,10 @@ INSERT INTO `book_rank` (`book_id`, `rank_type`, `rank_num`) VALUES
 
 
 
+-- 为 book_favorite 表添加缺失的字段
+ALTER TABLE `book_favorite`
+ADD COLUMN `last_read_chapter_id` BIGINT COMMENT '最后阅读章节ID',
+ADD COLUMN `last_read_chapter_num` INT COMMENT '最后阅读章节序号',
+ADD COLUMN `last_read_chapter_name` VARCHAR(200) COMMENT '最后阅读章节名称',
+ADD COLUMN `read_progress` INT DEFAULT 0 COMMENT '阅读进度(百分比)',
+ADD COLUMN `last_read_time` DATETIME COMMENT '最后阅读时间';

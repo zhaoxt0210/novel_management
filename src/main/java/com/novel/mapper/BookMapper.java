@@ -20,6 +20,9 @@ public interface BookMapper extends BaseMapper<Book> {
     
     @Update("UPDATE book SET favorite_count = favorite_count - 1 WHERE id = #{bookId} AND favorite_count > 0")
     void decrementFavoriteCount(@Param("bookId") Long bookId);
+
+    @Update("UPDATE book b SET b.favorite_count = (SELECT COUNT(*) FROM book_favorite bf WHERE bf.book_id = #{bookId}) WHERE b.id = #{bookId}")
+    void syncFavoriteCount(@Param("bookId") Long bookId);
     
     @Select("SELECT * FROM book WHERE book_name LIKE CONCAT('%', #{keyword}, '%') OR author_name LIKE CONCAT('%', #{keyword}, '%')")
     List<Book> searchBooks(@Param("keyword") String keyword);

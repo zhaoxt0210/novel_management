@@ -51,6 +51,24 @@
             gap: 10px;
         }
 
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: background 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: rgba(255,255,255,0.2);
+        }
+
         .back-btn {
             background: rgba(255,255,255,0.2);
             padding: 8px 20px;
@@ -80,6 +98,33 @@
             color: #999;
         }
 
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #999;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
         .toolbar {
             display: flex;
             justify-content: space-between;
@@ -105,7 +150,6 @@
             border-radius: 25px;
             font-size: 14px;
             outline: none;
-            transition: border-color 0.3s;
         }
 
         .search-input:focus {
@@ -119,11 +163,6 @@
             border: none;
             border-radius: 25px;
             cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .search-btn:hover {
-            background: #5568d3;
         }
 
         .sort-options {
@@ -272,15 +311,6 @@
             background: #5568d3;
         }
 
-        .action-btn.secondary {
-            background: #f0f0f0;
-            color: #666;
-        }
-
-        .action-btn.secondary:hover {
-            background: #e0e0e0;
-        }
-
         .action-btn.danger {
             background: #fee;
             color: #e74c3c;
@@ -288,38 +318,6 @@
 
         .action-btn.danger:hover {
             background: #fdd;
-        }
-
-        .context-menu {
-            position: fixed;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-            z-index: 1000;
-            display: none;
-            min-width: 160px;
-            overflow: hidden;
-        }
-
-        .context-menu-item {
-            padding: 12px 20px;
-            cursor: pointer;
-            transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .context-menu-item:hover {
-            background: #f5f5f5;
-        }
-
-        .context-menu-item.danger {
-            color: #e74c3c;
-        }
-
-        .context-menu-item.danger:hover {
-            background: #fee;
         }
 
         .empty-state {
@@ -339,40 +337,34 @@
             margin-bottom: 10px;
         }
 
-        .empty-desc {
-            color: #bbb;
-            margin-bottom: 20px;
-        }
-
         .loading {
             text-align: center;
             padding: 50px;
             color: #999;
         }
 
-        .error-state {
-            text-align: center;
-            padding: 50px;
-            color: #e74c3c;
-        }
-
         .toast {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.8);
+            top: 20px;
+            right: 20px;
+            background: #27ae60;
             color: white;
-            padding: 15px 30px;
+            padding: 12px 24px;
             border-radius: 8px;
             z-index: 2000;
             display: none;
-            animation: fadeIn 0.3s;
+            animation: slideIn 0.3s;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         @media (max-width: 768px) {
@@ -384,9 +376,8 @@
                 max-width: 100%;
                 width: 100%;
             }
-            .sort-options {
-                width: 100%;
-                overflow-x: auto;
+            .stats-cards {
+                grid-template-columns: 1fr;
             }
             .bookshelf-grid {
                 grid-template-columns: 1fr;
@@ -395,317 +386,308 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="container">
-            <div class="nav">
-                <div class="logo">
-                    <a href="/">
-                        <i class="fas fa-book-open"></i>
-                        <span>墨韵书阁</span>
-                    </a>
-                </div>
-                <a href="/" class="back-btn">
-                    <i class="fas fa-home"></i> 返回首页
+<div class="header">
+    <div class="container">
+        <div class="nav">
+            <div class="logo">
+                <a href="/">
+                    <i class="fas fa-book-open"></i>
+                    <span>墨韵书阁</span>
                 </a>
             </div>
+            <div class="nav-links">
+                <a href="/">首页</a>
+                <a href="/rank.html">排行榜</a>
+                <a href="/category.html">分类书库</a>
+                <a href="/favorites.html">我的收藏</a>
+            </div>
+            <a href="/" class="back-btn">
+                <i class="fas fa-home"></i> 返回首页
+            </a>
         </div>
     </div>
+</div>
 
-    <div class="page-header">
-        <div class="container">
-            <h1 class="page-title">📚 我的书架</h1>
-            <p class="page-desc">管理您收藏的小说，继续上次的阅读</p>
-        </div>
-    </div>
-
+<div class="page-header">
     <div class="container">
-        <div class="toolbar">
-            <div class="search-box">
-                <input type="text" id="searchKeyword" class="search-input" placeholder="搜索书架中的书籍...">
-                <button class="search-btn" onclick="searchBooks()">
-                    <i class="fas fa-search"></i>
-                </button>
-            </div>
-            <div class="sort-options">
-                <button class="sort-btn active" data-sort="create_time" onclick="changeSort('create_time')">
-                    <i class="fas fa-clock"></i> 添加时间
-                </button>
-                <button class="sort-btn" data-sort="last_read" onclick="changeSort('last_read')">
-                    <i class="fas fa-history"></i> 最近阅读
-                </button>
-                <button class="sort-btn" data-sort="progress" onclick="changeSort('progress')">
-                    <i class="fas fa-chart-line"></i> 阅读进度
-                </button>
-            </div>
-        </div>
+        <h1 class="page-title">📚 我的书架</h1>
+        <p class="page-desc">管理您书架中的小说，继续上次的阅读</p>
+    </div>
+</div>
 
-        <div id="bookshelfGrid" class="bookshelf-grid">
-            <div class="loading">加载中...</div>
+<div class="container">
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-number" id="bookCount">0</div>
+            <div class="stat-label">书籍数量</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="totalWords">0</div>
+            <div class="stat-label">总字数(万)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="avgProgress">0%</div>
+            <div class="stat-label">平均进度</div>
         </div>
     </div>
 
-    <div id="contextMenu" class="context-menu">
-        <div class="context-menu-item" onclick="continueReading()">
-            <i class="fas fa-book-open"></i> 继续阅读
+    <div class="toolbar">
+        <div class="search-box">
+            <input type="text" id="searchKeyword" class="search-input" placeholder="搜索书架中的书籍...">
+            <button class="search-btn" onclick="searchBooks()">
+                <i class="fas fa-search"></i>
+            </button>
         </div>
-        <div class="context-menu-item" onclick="viewBookDetail()">
-            <i class="fas fa-info-circle"></i> 书籍详情
-        </div>
-        <div class="context-menu-item danger" onclick="removeFromBookshelf()">
-            <i class="fas fa-trash-alt"></i> 移出书架
+        <div class="sort-options">
+            <button class="sort-btn active" data-sort="create_time" onclick="changeSort('create_time')">
+                <i class="fas fa-clock"></i> 添加时间
+            </button>
+            <button class="sort-btn" data-sort="last_read" onclick="changeSort('last_read')">
+                <i class="fas fa-history"></i> 最近阅读
+            </button>
+            <button class="sort-btn" data-sort="progress" onclick="changeSort('progress')">
+                <i class="fas fa-chart-line"></i> 阅读进度
+            </button>
         </div>
     </div>
 
-    <div id="toast" class="toast"></div>
+    <div id="bookshelfGrid" class="bookshelf-grid">
+        <div class="loading">加载中...</div>
+    </div>
+</div>
 
-    <script>
-        let token = null;
-        let userId = null;
-        let currentSort = 'create_time';
-        let bookshelfData = [];
-        let selectedBook = null;
+<div id="toast" class="toast"></div>
 
-        window.onload = function() {
-            checkLogin();
-            loadBookshelf();
-            
-            document.addEventListener('click', function(e) {
-                document.getElementById('contextMenu').style.display = 'none';
-            });
+<script>
+    let token = null;
+    let userId = null;
+    let currentSort = 'create_time';
+    let bookshelfData = [];
 
-            document.getElementById('searchKeyword').addEventListener('keypress', function(e) {
-                if (e.keyCode === 13) {
-                    searchBooks();
-                }
-            });
-        };
+    window.onload = function() {
+        checkLogin();
+        loadBookshelf();
 
-        function checkLogin() {
-            token = localStorage.getItem('token');
-            userId = localStorage.getItem('userId');
-            
-            if (!token || !userId) {
-                showToast('请先登录');
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 1500);
-                return;
+        document.getElementById('searchKeyword').addEventListener('keypress', function(e) {
+            if (e.keyCode === 13) {
+                searchBooks();
             }
-        }
+        });
+    };
 
-        async function loadBookshelf() {
-            try {
-                document.getElementById('bookshelfGrid').innerHTML = '<div class="loading">加载中...</div>';
-                
-                const response = await fetch(`/api/book/bookshelf/${userId}?sortBy=${currentSort}`);
-                const data = await response.json();
-                
-                if (data.code === 200) {
-                    bookshelfData = data.data || [];
-                    renderBookshelf(bookshelfData);
-                } else {
-                    showError(data.msg || '加载失败');
-                }
-            } catch (error) {
-                console.error('加载书架失败:', error);
-                showError('网络错误，请检查网络连接');
-            }
-        }
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.style.background = type === 'error' ? '#e74c3c' : '#27ae60';
+        toast.style.display = 'block';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 2000);
+    }
 
-        function renderBookshelf(books) {
-            if (!books || books.length === 0) {
-                document.getElementById('bookshelfGrid').innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">📚</div>
-                        <div class="empty-title">书架空空如也</div>
-                        <div class="empty-desc">快去首页挑选喜欢的小说吧~</div>
-                        <button class="action-btn primary" onclick="window.location.href='/'">
-                            <i class="fas fa-search"></i> 发现好书
-                        </button>
-                    </div>
-                `;
-                return;
-            }
+    function checkLogin() {
+        token = localStorage.getItem('token');
+        userId = localStorage.getItem('userId');
 
-            const html = books.map(book => {
-                const progress = book.readProgress || 0;
-                const progressText = progress > 0 ? `已读${progress}%` : '未开始阅读';
-                
-                return `
-                    <div class="book-card" 
-                         onclick="viewBook(${book.bookId})"
-                         oncontextmenu="showContextMenu(event, ${book.bookId})">
-                        <div class="book-cover">
-                            📖
-                            <div class="book-status">${book.status === 0 ? '连载中' : '已完结'}</div>
-                        </div>
-                        <div class="book-info">
-                            <div class="book-title">${book.bookName}</div>
-                            <div class="book-author">${book.authorName}</div>
-                            ${book.lastReadChapterName ? `
-                                <div class="chapter-info">
-                                    <i class="fas fa-bookmark"></i> ${book.lastReadChapterNum ? '第' + book.lastReadChapterNum + '章 ' : ''}${book.lastReadChapterName}
-                                </div>
-                            ` : ''}
-                            <div class="read-progress">
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: ${progress}%"></div>
-                                </div>
-                                <div class="progress-text">
-                                    <span>${progressText}</span>
-                                    <span>${book.totalWords || 0}字</span>
-                                </div>
-                            </div>
-                            <div class="card-actions" onclick="event.stopPropagation()">
-                                <button class="action-btn primary" onclick="continueRead(${book.bookId}, ${book.lastReadChapterId})">
-                                    <i class="fas fa-play"></i> ${book.lastReadChapterId ? '继续阅读' : '开始阅读'}
-                                </button>
-                                <button class="action-btn danger" onclick="removeBook(${book.bookId})">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            document.getElementById('bookshelfGrid').innerHTML = html;
-        }
-
-        function changeSort(sortType) {
-            currentSort = sortType;
-            
-            document.querySelectorAll('.sort-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.dataset.sort === sortType) {
-                    btn.classList.add('active');
-                }
-            });
-            
-            loadBookshelf();
-        }
-
-        async function searchBooks() {
-            const keyword = document.getElementById('searchKeyword').value.trim();
-            
-            if (!keyword) {
-                renderBookshelf(bookshelfData);
-                return;
-            }
-
-            const filtered = bookshelfData.filter(book => 
-                book.bookName.includes(keyword) || 
-                book.authorName.includes(keyword)
-            );
-            
-            renderBookshelf(filtered);
-            
-            if (filtered.length === 0) {
-                document.getElementById('bookshelfGrid').innerHTML += `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 20px; color: #999;">
-                        未找到匹配"${keyword}"的书籍
-                    </div>
-                `;
-            }
-        }
-
-        function viewBook(bookId) {
-            window.location.href = `/book.html?id=${bookId}`;
-        }
-
-        function continueRead(bookId, chapterId) {
-            if (chapterId) {
-                window.location.href = `/chapter.html?bookId=${bookId}&chapterId=${chapterId}`;
-            } else {
-                fetchFirstChapter(bookId);
-            }
-        }
-
-        async function fetchFirstChapter(bookId) {
-            try {
-                const response = await fetch(`/api/book/${bookId}/chapters`);
-                const data = await response.json();
-                if (data.code === 200 && data.data && data.data.length > 0) {
-                    const firstChapter = data.data[0];
-                    window.location.href = `/chapter.html?bookId=${bookId}&chapterId=${firstChapter.id}`;
-                } else {
-                    showToast('暂无章节');
-                }
-            } catch (error) {
-                showToast('加载失败');
-            }
-        }
-
-        function showContextMenu(event, bookId) {
-            event.preventDefault();
-            event.stopPropagation();
-            
-            selectedBook = bookshelfData.find(b => b.bookId === bookId);
-            
-            const menu = document.getElementById('contextMenu');
-            menu.style.display = 'block';
-            menu.style.left = event.pageX + 'px';
-            menu.style.top = event.pageY + 'px';
-        }
-
-        function continueReading() {
-            if (selectedBook) {
-                continueRead(selectedBook.bookId, selectedBook.lastReadChapterId);
-            }
-        }
-
-        function viewBookDetail() {
-            if (selectedBook) {
-                viewBook(selectedBook.bookId);
-            }
-        }
-
-        async function removeFromBookshelf() {
-            if (selectedBook && confirm('确定要将《' + selectedBook.bookName + '》移出书架吗？')) {
-                await removeBook(selectedBook.bookId);
-            }
-        }
-
-        async function removeBook(bookId) {
-            try {
-                const response = await fetch(`/api/book/favorite/remove?userId=${userId}&bookId=${bookId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                
-                if (data.code === 200) {
-                    showToast('已移出书架');
-                    loadBookshelf();
-                } else {
-                    showToast(data.msg || '操作失败');
-                }
-            } catch (error) {
-                console.error('移除失败:', error);
-                showToast('操作失败，请稍后重试');
-            }
-        }
-
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.style.display = 'block';
+        if (!token || !userId) {
+            showToast('请先登录', 'error');
             setTimeout(() => {
-                toast.style.display = 'none';
-            }, 2000);
+                window.location.href = '/';
+            }, 1500);
+            return;
         }
+    }
 
-        function showError(message) {
+    async function loadBookshelf() {
+        try {
+            document.getElementById('bookshelfGrid').innerHTML = '<div class="loading">加载中...</div>';
+
+            const response = await fetch(`/api/bookshelf/${userId}?sortBy=${currentSort}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+
+            if (data.code === 200) {
+                bookshelfData = data.data || [];
+                updateStats();
+                renderBookshelf(bookshelfData);
+            } else {
+                showError(data.msg || '加载失败');
+            }
+        } catch (error) {
+            console.error('加载书架失败:', error);
+            showError('网络错误，请检查网络连接');
+        }
+    }
+
+    function updateStats() {
+        const bookCount = bookshelfData.length;
+        const totalWords = bookshelfData.reduce((sum, book) => sum + (book.totalWords || 0), 0);
+        const avgProgress = bookshelfData.length > 0
+            ? Math.round(bookshelfData.reduce((sum, book) => sum + (book.readProgress || 0), 0) / bookshelfData.length)
+            : 0;
+
+        document.getElementById('bookCount').textContent = bookCount;
+        document.getElementById('totalWords').textContent = Math.floor(totalWords / 10000);
+        document.getElementById('avgProgress').textContent = avgProgress + '%';
+    }
+
+    function renderBookshelf(books) {
+        if (!books || books.length === 0) {
             document.getElementById('bookshelfGrid').innerHTML = `
-                <div class="error-state">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <p>${message}</p>
-                    <button class="action-btn primary" onclick="loadBookshelf()">
-                        <i class="fas fa-redo"></i> 重试
+                <div class="empty-state">
+                    <div class="empty-icon">📚</div>
+                    <div class="empty-title">书架空空如也</div>
+                    <div class="empty-desc">快去首页挑选喜欢的小说加入书架吧~</div>
+                    <button class="action-btn primary" onclick="window.location.href='/'">
+                        <i class="fas fa-search"></i> 发现好书
                     </button>
                 </div>
             `;
+            return;
         }
-    </script>
+
+        const html = books.map(book => {
+            const progress = book.readProgress || 0;
+            const progressText = progress > 0 ? `已读${progress}%` : '未开始阅读';
+
+            return `
+                <div class="book-card" onclick="viewBook(${book.bookId})">
+                    <div class="book-cover">
+                        📖
+                        <div class="book-status">${book.status === 0 ? '连载中' : '已完结'}</div>
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">${escapeHtml(book.bookName)}</div>
+                        <div class="book-author">${escapeHtml(book.authorName)}</div>
+                        ${book.lastReadChapterName ? `
+                            <div class="chapter-info">
+                                <i class="fas fa-bookmark"></i> ${book.lastReadChapterNum ? '第' + book.lastReadChapterNum + '章 ' : ''}${escapeHtml(book.lastReadChapterName)}
+                            </div>
+                        ` : ''}
+                        <div class="read-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span>${progressText}</span>
+                                <span>${(book.totalWords / 10000).toFixed(0)}万字</span>
+                            </div>
+                        </div>
+                        <div class="card-actions" onclick="event.stopPropagation()">
+                            <button class="action-btn primary" onclick="continueRead(${book.bookId}, ${book.lastReadChapterId})">
+                                <i class="fas fa-play"></i> ${book.lastReadChapterId ? '继续阅读' : '开始阅读'}
+                            </button>
+                            <button class="action-btn danger" onclick="removeFromBookshelf(${book.bookId})">
+                                <i class="fas fa-trash-alt"></i> 移除
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        document.getElementById('bookshelfGrid').innerHTML = html;
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function changeSort(sortType) {
+        currentSort = sortType;
+
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.sort === sortType) {
+                btn.classList.add('active');
+            }
+        });
+
+        loadBookshelf();
+    }
+
+    function searchBooks() {
+        const keyword = document.getElementById('searchKeyword').value.trim();
+
+        if (!keyword) {
+            renderBookshelf(bookshelfData);
+            return;
+        }
+
+        const filtered = bookshelfData.filter(book =>
+            book.bookName.includes(keyword) ||
+            book.authorName.includes(keyword)
+        );
+
+        renderBookshelf(filtered);
+    }
+
+    function viewBook(bookId) {
+        window.location.href = `/book.html?id=${bookId}`;
+    }
+
+    function continueRead(bookId, chapterId) {
+        if (chapterId) {
+            window.location.href = `/chapter.html?bookId=${bookId}&chapterId=${chapterId}`;
+        } else {
+            fetchFirstChapter(bookId);
+        }
+    }
+
+    async function fetchFirstChapter(bookId) {
+        try {
+            const response = await fetch(`/api/book/${bookId}/chapters`);
+            const data = await response.json();
+            if (data.code === 200 && data.data && data.data.length > 0) {
+                const firstChapter = data.data[0];
+                window.location.href = `/chapter.html?bookId=${bookId}&chapterId=${firstChapter.id}`;
+            } else {
+                showToast('暂无章节', 'error');
+            }
+        } catch (error) {
+            showToast('加载失败', 'error');
+        }
+    }
+
+    async function removeFromBookshelf(bookId) {
+        const book = bookshelfData.find(b => b.bookId === bookId);
+        if (!confirm(`确定要将《${book.bookName}》移出书架吗？`)) return;
+
+        try {
+            const response = await fetch(`/api/bookshelf/remove?userId=${userId}&bookId=${bookId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+
+            if (data.code === 200) {
+                showToast('已移出书架');
+                loadBookshelf();
+            } else {
+                showToast(data.msg || '操作失败', 'error');
+            }
+        } catch (error) {
+            console.error('移除失败:', error);
+            showToast('操作失败，请稍后重试', 'error');
+        }
+    }
+
+    function showError(message) {
+        document.getElementById('bookshelfGrid').innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">⚠️</div>
+                <div class="empty-title">加载失败</div>
+                <div class="empty-desc">${message}</div>
+                <button class="action-btn primary" onclick="loadBookshelf()">
+                    <i class="fas fa-redo"></i> 重试
+                </button>
+            </div>
+        `;
+    }
+</script>
 </body>
 </html>

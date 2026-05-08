@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;  // 添加这一行导入
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +38,209 @@ public class BookServiceImpl implements BookService {
     private final ReadHistoryMapper readHistoryMapper;
     private final CommentMapper commentMapper;
 
+    // ========== 书架功能（type = 1）==========
+
+    @Override
+    @Transactional
+    public RestResp<Void> addToBookshelf(Long userId, Long bookId) {
+        Book book = bookMapper.selectById(bookId);
+        if (book == null) {
+            return RestResp.error("书籍不存在");
+        }
+
+        // 检查是否已在书架中（type = 1）
+        BookFavorite existing = bookFavoriteMapper.selectBookshelfByUserIdAndBookId(userId, bookId);
+        if (existing != null) {
+            return RestResp.error("已在书架中");
+        }
+
+        BookFavorite favorite = new BookFavorite();
+        favorite.setUserId(userId);
+        favorite.setBookId(bookId);
+        favorite.setType(1);  // 书架类型
+        favorite.setCreateTime(LocalDateTime.now());
+        bookFavoriteMapper.insert(favorite);
+
+        return RestResp.ok();
+    }
+
+    @Override
+    @Transactional
+    public RestResp<Void> removeFromBookshelf(Long userId, Long bookId) {
+        LambdaQueryWrapper<BookFavorite> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(BookFavorite::getUserId, userId)
+                .eq(BookFavorite::getBookId, bookId)
+                .eq(BookFavorite::getType, 1);  // 只删除书架中的
+        bookFavoriteMapper.delete(wrapper);
+        return RestResp.ok();
+    }
+
+    @Override
+    public RestResp<Boolean> isInBookshelf(Long userId, Long bookId) {
+        BookFavorite favorite = bookFavoriteMapper.selectBookshelfByUserIdAndBookId(userId, bookId);
+        return RestResp.ok(favorite != null);
+    }
+
+    @Override
+    public RestResp<List<BookshelfRespDto>> getUserBookshelf(Long userId, String sortBy) {
+        List<BookFavorite> favorites;
+
+        if ("last_read".equals(sortBy)) {
+            favorites = bookFavoriteMapper.selectBookshelfByUserIdOrderByLastRead(userId);
+        } else if ("progress".equals(sortBy)) {
+            favorites = bookFavoriteMapper.selectBookshelfByUserIdOrderByProgress(userId);
+        } else {
+            favorites = bookFavoriteMapper.selectBookshelfByUserId(userId);
+        }
+
+        if (favorites == null || favorites.isEmpty()) {
+            return RestResp.ok(List.of());
+        }
+
+        List<Long> bookIds = favorites.stream()
+                .map(BookFavorite::getBookId)
+                .collect(Collectors.toList());
+
+        List<Book> books = bookMapper.selectBatchIds(bookIds);
+        Map<Long, Book> bookMap = books.stream()
+                .collect(Collectors.toMap(Book::getId, b -> b));
+
+        return RestResp.ok(favorites.stream().map(fav -> {
+            Book book = bookMap.get(fav.getBookId());
+            if (book == null) return null;
+
+            return BookshelfRespDto.builder()
+                    .id(fav.getId())
+                    .bookId(book.getId())
+                    .bookName(book.getBookName())
+                    .authorName(book.getAuthorName())
+                    .cover(book.getCover())
+                    .description(book.getDescription())
+                    .totalWords(book.getTotalWords())
+                    .favoriteCount(book.getFavoriteCount())
+                    .status(book.getStatus())
+                    .lastReadChapterId(fav.getLastReadChapterId())
+                    .lastReadChapterNum(fav.getLastReadChapterNum())
+                    .lastReadChapterName(fav.getLastReadChapterName())
+                    .readProgress(fav.getReadProgress())
+                    .addTime(fav.getCreateTime())
+                    .lastReadTime(fav.getLastReadTime())
+                    .build();
+        }).filter(Objects::nonNull).collect(Collectors.toList()));  // 使用 Objects::nonNull
+    }
+
+    @Override
+    @Transactional
+    public RestResp<Void> updateReadProgress(ReadProgressReqDto dto) {
+        BookFavorite favorite = bookFavoriteMapper.selectBookshelfByUserIdAndBookId(dto.getUserId(), dto.getBookId());
+        if (favorite == null) {
+            return RestResp.error("该书籍不在书架中");
+        }
+
+        bookFavoriteMapper.updateReadProgress(
+                dto.getUserId(),
+                dto.getBookId(),
+                dto.getChapterId(),
+                dto.getChapterNum(),
+                dto.getChapterName(),
+                dto.getReadProgress()
+        );
+
+        return RestResp.ok();
+    }
+
+    // ========== 收藏功能（type = 2）==========
+
+    @Override
+    @Transactional
+    public RestResp<Void> addFavorite(Long userId, Long bookId) {
+        Book book = bookMapper.selectById(bookId);
+        if (book == null) {
+            return RestResp.error("书籍不存在");
+        }
+
+        // 检查是否已收藏（type = 2）
+        BookFavorite existing = bookFavoriteMapper.selectFavoriteByUserIdAndBookId(userId, bookId);
+        if (existing != null) {
+            return RestResp.error("已经收藏过了");
+        }
+
+        BookFavorite favorite = new BookFavorite();
+        favorite.setUserId(userId);
+        favorite.setBookId(bookId);
+        favorite.setType(2);  // 收藏类型
+        favorite.setCreateTime(LocalDateTime.now());
+        bookFavoriteMapper.insert(favorite);
+
+        // 同步收藏数
+        bookMapper.syncFavoriteCount(bookId);
+
+        return RestResp.ok();
+    }
+
+    @Override
+    @Transactional
+    public RestResp<Void> removeFavorite(Long userId, Long bookId) {
+        LambdaQueryWrapper<BookFavorite> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(BookFavorite::getUserId, userId)
+                .eq(BookFavorite::getBookId, bookId)
+                .eq(BookFavorite::getType, 2);  // 只删除收藏
+        int deletedRows = bookFavoriteMapper.delete(wrapper);
+
+        if (deletedRows == 0) {
+            return RestResp.error("未收藏该书籍");
+        }
+
+        // 同步收藏数
+        bookMapper.syncFavoriteCount(bookId);
+
+        return RestResp.ok();
+    }
+
+    @Override
+    public RestResp<Boolean> isFavorited(Long userId, Long bookId) {
+        BookFavorite favorite = bookFavoriteMapper.selectFavoriteByUserIdAndBookId(userId, bookId);
+        return RestResp.ok(favorite != null);
+    }
+
+    @Override
+    public RestResp<List<BookInfoRespDto>> getUserFavorites(Long userId) {
+        List<BookFavorite> favorites = bookFavoriteMapper.selectFavoritesByUserId(userId);
+
+        if (favorites == null || favorites.isEmpty()) {
+            return RestResp.ok(List.of());
+        }
+
+        List<Long> bookIds = favorites.stream()
+                .map(BookFavorite::getBookId)
+                .collect(Collectors.toList());
+
+        List<Book> books = bookMapper.selectBatchIds(bookIds);
+        return RestResp.ok(books.stream().map(this::convertToDto).collect(Collectors.toList()));
+    }
+
+    // ========== 收藏时自动加入书架（联动功能）==========
+
+    @Override
+    @Transactional
+    public RestResp<Void> addFavoriteWithBookshelf(Long userId, Long bookId) {
+        // 1. 添加收藏
+        RestResp<Void> favoriteResult = addFavorite(userId, bookId);
+        if (favoriteResult.getCode() != 200) {
+            return favoriteResult;
+        }
+
+        // 2. 检查是否已在书架中，如果没有则自动加入
+        boolean inBookshelf = isInBookshelf(userId, bookId).getData();
+        if (!inBookshelf) {
+            addToBookshelf(userId, bookId);
+        }
+
+        return RestResp.ok();
+    }
+
+    // ========== 以下为原有方法，保持不变 ==========
+
     @Override
     public RestResp<List<BookInfoRespDto>> listHomeBooks() {
         LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
@@ -44,28 +248,24 @@ public class BookServiceImpl implements BookService {
         wrapper.orderByDesc(Book::getUpdateTime);
         wrapper.last("limit 10");
         List<Book> books = bookMapper.selectList(wrapper);
-
         return RestResp.ok(books.stream().map(this::convertToDto).collect(Collectors.toList()));
     }
 
     @Override
     public RestResp<Map<String, Object>> searchBooks(BookSearchReqDto dto) {
         Map<String, Object> result = new HashMap<>();
-        
-        // 构建查询条件
         LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Book::getStatus, 0);
-        
+
         if (dto.getKeyword() != null && !dto.getKeyword().trim().isEmpty()) {
             wrapper.and(w -> w.like(Book::getBookName, dto.getKeyword())
                     .or().like(Book::getAuthorName, dto.getKeyword()));
         }
-        
+
         if (dto.getCategoryId() != null) {
             wrapper.eq(Book::getCategoryId, dto.getCategoryId());
         }
-        
-        // 排序
+
         if ("visit_count".equals(dto.getSortBy())) {
             wrapper.orderByDesc(Book::getVisitCount);
         } else if ("favorite_count".equals(dto.getSortBy())) {
@@ -73,20 +273,19 @@ public class BookServiceImpl implements BookService {
         } else {
             wrapper.orderByDesc(Book::getUpdateTime);
         }
-        
-        // 分页
+
         Page<Book> page = new Page<>(dto.getPageNum(), dto.getPageSize());
         IPage<Book> bookPage = bookMapper.selectPage(page, wrapper);
-        
+
         List<BookInfoRespDto> list = bookPage.getRecords().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
-        
+
         result.put("list", list);
         result.put("total", bookPage.getTotal());
         result.put("pageNum", dto.getPageNum());
         result.put("pageSize", dto.getPageSize());
-        
+
         return RestResp.ok(result);
     }
 
@@ -117,16 +316,15 @@ public class BookServiceImpl implements BookService {
         if (chapter == null) {
             return RestResp.error("章节不存在");
         }
-        
+
         Book book = bookMapper.selectById(chapter.getBookId());
         if (book == null) {
             return RestResp.error("小说不存在");
         }
-        
-        // 获取上下章节
+
         Long prevChapterId = chapterMapper.getPrevChapterId(book.getId(), chapter.getChapterNum());
         Long nextChapterId = chapterMapper.getNextChapterId(book.getId(), chapter.getChapterNum());
-        
+
         ChapterRespDto dto = ChapterRespDto.builder()
                 .id(chapter.getId())
                 .chapterNum(chapter.getChapterNum())
@@ -136,8 +334,7 @@ public class BookServiceImpl implements BookService {
                 .prevChapterId(prevChapterId)
                 .nextChapterId(nextChapterId)
                 .build();
-        
-        // 记录阅读历史
+
         if (userId != null) {
             ReadHistory history = new ReadHistory();
             history.setUserId(userId);
@@ -148,7 +345,7 @@ public class BookServiceImpl implements BookService {
             history.setCreateTime(LocalDateTime.now());
             readHistoryMapper.insert(history);
         }
-        
+
         return RestResp.ok(dto);
     }
 
@@ -163,155 +360,15 @@ public class BookServiceImpl implements BookService {
     public RestResp<List<BookInfoRespDto>> listBooksByCategory(Long categoryId, String sortBy, Integer pageNum, Integer pageSize) {
         int offset = (pageNum - 1) * pageSize;
         String sortColumn = "update_time";
-        
+
         if ("visit_count".equals(sortBy)) {
             sortColumn = "visit_count";
         } else if ("favorite_count".equals(sortBy)) {
             sortColumn = "favorite_count";
         }
-        
+
         List<Book> books = bookMapper.getBooksByCategory(categoryId, sortColumn, offset, pageSize);
         return RestResp.ok(books.stream().map(this::convertToDto).collect(Collectors.toList()));
-    }
-
-    @Override
-    @Transactional
-    public RestResp<Void> addFavorite(Long userId, Long bookId) {
-        // 检查书籍是否存在
-        Book book = bookMapper.selectById(bookId);
-        if (book == null) {
-            return RestResp.error("书籍不存在");
-        }
-        
-        // 检查是否已收藏
-        LambdaQueryWrapper<BookFavorite> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(BookFavorite::getUserId, userId)
-                .eq(BookFavorite::getBookId, bookId);
-        if (bookFavoriteMapper.selectCount(wrapper) > 0) {
-            return RestResp.error("已经收藏过了");
-        }
-        
-        // 添加收藏
-        BookFavorite favorite = new BookFavorite();
-        favorite.setUserId(userId);
-        favorite.setBookId(bookId);
-        favorite.setCreateTime(LocalDateTime.now());
-        bookFavoriteMapper.insert(favorite);
-        
-        // 更新小说收藏数
-        bookMapper.incrementFavoriteCount(bookId);
-        
-        return RestResp.ok();
-    }
-
-    @Override
-    @Transactional
-    public RestResp<Void> removeFavorite(Long userId, Long bookId) {
-        LambdaQueryWrapper<BookFavorite> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(BookFavorite::getUserId, userId)
-                .eq(BookFavorite::getBookId, bookId);
-        bookFavoriteMapper.delete(wrapper);
-        
-        // 更新小说收藏数
-        bookMapper.decrementFavoriteCount(bookId);
-        
-        return RestResp.ok();
-    }
-
-    @Override
-    public RestResp<Boolean> isFavorited(Long userId, Long bookId) {
-        LambdaQueryWrapper<BookFavorite> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(BookFavorite::getUserId, userId)
-                .eq(BookFavorite::getBookId, bookId);
-        boolean exists = bookFavoriteMapper.selectCount(wrapper) > 0;
-        return RestResp.ok(exists);
-    }
-
-    @Override
-    public RestResp<List<BookInfoRespDto>> getUserFavorites(Long userId) {
-        LambdaQueryWrapper<BookFavorite> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(BookFavorite::getUserId, userId)
-                .orderByDesc(BookFavorite::getCreateTime);
-        List<BookFavorite> favorites = bookFavoriteMapper.selectList(wrapper);
-        
-        if (favorites.isEmpty()) {
-            return RestResp.ok(List.of());
-        }
-        
-        List<Long> bookIds = favorites.stream()
-                .map(BookFavorite::getBookId)
-                .collect(Collectors.toList());
-        
-        List<Book> books = bookMapper.selectBatchIds(bookIds);
-        return RestResp.ok(books.stream().map(this::convertToDto).collect(Collectors.toList()));
-    }
-
-    @Override
-    public RestResp<List<BookshelfRespDto>> getUserBookshelf(Long userId, String sortBy) {
-        List<BookFavorite> favorites;
-        
-        if ("last_read".equals(sortBy)) {
-            favorites = bookFavoriteMapper.selectByUserIdOrderByLastRead(userId);
-        } else if ("progress".equals(sortBy)) {
-            favorites = bookFavoriteMapper.selectByUserIdOrderByProgress(userId);
-        } else {
-            favorites = bookFavoriteMapper.selectByUserId(userId);
-        }
-        
-        if (favorites.isEmpty()) {
-            return RestResp.ok(List.of());
-        }
-        
-        List<Long> bookIds = favorites.stream()
-                .map(BookFavorite::getBookId)
-                .collect(Collectors.toList());
-        
-        List<Book> books = bookMapper.selectBatchIds(bookIds);
-        Map<Long, Book> bookMap = books.stream()
-                .collect(Collectors.toMap(Book::getId, b -> b));
-        
-        return RestResp.ok(favorites.stream().map(fav -> {
-            Book book = bookMap.get(fav.getBookId());
-            if (book == null) return null;
-            
-            return BookshelfRespDto.builder()
-                    .id(fav.getId())
-                    .bookId(book.getId())
-                    .bookName(book.getBookName())
-                    .authorName(book.getAuthorName())
-                    .cover(book.getCover())
-                    .description(book.getDescription())
-                    .totalWords(book.getTotalWords())
-                    .favoriteCount(book.getFavoriteCount())
-                    .status(book.getStatus())
-                    .lastReadChapterId(fav.getLastReadChapterId())
-                    .lastReadChapterNum(fav.getLastReadChapterNum())
-                    .lastReadChapterName(fav.getLastReadChapterName())
-                    .readProgress(fav.getReadProgress())
-                    .addTime(fav.getCreateTime())
-                    .lastReadTime(fav.getLastReadTime())
-                    .build();
-        }).filter(item -> item != null).collect(Collectors.toList()));
-    }
-
-    @Override
-    @Transactional
-    public RestResp<Void> updateReadProgress(ReadProgressReqDto dto) {
-        BookFavorite favorite = bookFavoriteMapper.selectByUserIdAndBookId(dto.getUserId(), dto.getBookId());
-        if (favorite == null) {
-            return RestResp.error("该书籍不在书架中");
-        }
-        
-        bookFavoriteMapper.updateReadProgress(
-                dto.getUserId(),
-                dto.getBookId(),
-                dto.getChapterId(),
-                dto.getChapterNum(),
-                dto.getChapterName(),
-                dto.getReadProgress()
-        );
-        
-        return RestResp.ok();
     }
 
     @Override
@@ -321,30 +378,29 @@ public class BookServiceImpl implements BookService {
                 .orderByDesc(ReadHistory::getCreateTime)
                 .last("limit 50");
         List<ReadHistory> histories = readHistoryMapper.selectList(wrapper);
-        
+
         if (histories.isEmpty()) {
             return RestResp.ok(List.of());
         }
-        
-        // 去重，每个小说只保留最新的一条
+
         Map<Long, ReadHistory> uniqueHistories = new HashMap<>();
         for (ReadHistory history : histories) {
             if (!uniqueHistories.containsKey(history.getBookId())) {
                 uniqueHistories.put(history.getBookId(), history);
             }
         }
-        
+
         List<ReadHistory> uniqueList = uniqueHistories.values().stream()
                 .collect(Collectors.toList());
-        
+
         List<Long> bookIds = uniqueList.stream()
                 .map(ReadHistory::getBookId)
                 .collect(Collectors.toList());
-        
+
         List<Book> books = bookMapper.selectBatchIds(bookIds);
         Map<Long, Book> bookMap = books.stream()
                 .collect(Collectors.toMap(Book::getId, b -> b));
-        
+
         return RestResp.ok(uniqueList.stream().map(history -> {
             Book book = bookMap.get(history.getBookId());
             return ReadHistoryRespDto.builder()
@@ -368,12 +424,12 @@ public class BookServiceImpl implements BookService {
         if (user == null) {
             return RestResp.error("用户不存在");
         }
-        
+
         Book book = bookMapper.selectById(dto.getBookId());
         if (book == null) {
             return RestResp.error("小说不存在");
         }
-        
+
         Comment comment = new Comment();
         comment.setUserId(dto.getUserId());
         comment.setBookId(dto.getBookId());
@@ -381,7 +437,7 @@ public class BookServiceImpl implements BookService {
         comment.setLikeCount(0);
         comment.setStatus(1);
         comment.setCreateTime(LocalDateTime.now());
-        
+
         commentMapper.insert(comment);
         return RestResp.ok();
     }
@@ -394,19 +450,19 @@ public class BookServiceImpl implements BookService {
                 .eq(Comment::getStatus, 1)
                 .orderByDesc(Comment::getCreateTime);
         IPage<Comment> commentPage = commentMapper.selectPage(page, wrapper);
-        
+
         if (commentPage.getRecords().isEmpty()) {
             return RestResp.ok(List.of());
         }
-        
+
         List<Long> userIds = commentPage.getRecords().stream()
                 .map(Comment::getUserId)
                 .collect(Collectors.toList());
-        
+
         List<User> users = userMapper.selectBatchIds(userIds);
         Map<Long, User> userMap = users.stream()
                 .collect(Collectors.toMap(User::getId, u -> u));
-        
+
         return RestResp.ok(commentPage.getRecords().stream().map(comment -> {
             User user = userMap.get(comment.getUserId());
             return CommentRespDto.builder()
@@ -425,8 +481,8 @@ public class BookServiceImpl implements BookService {
     @Override
     public RestResp<List<BookInfoRespDto>> getRanking(String type, Integer limit) {
         LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Book::getStatus, 0);
-        
+        wrapper.eq(Book::getStatus, 1);  // 已完结
+
         if ("visit".equals(type)) {
             wrapper.orderByDesc(Book::getVisitCount);
         } else if ("favorite".equals(type)) {
@@ -434,10 +490,10 @@ public class BookServiceImpl implements BookService {
         } else {
             wrapper.orderByDesc(Book::getUpdateTime);
         }
-        
+
         wrapper.last("limit " + limit);
         List<Book> books = bookMapper.selectList(wrapper);
-        
+
         return RestResp.ok(books.stream().map(this::convertToDto).collect(Collectors.toList()));
     }
 
@@ -447,13 +503,15 @@ public class BookServiceImpl implements BookService {
         wrapper.eq(Book::getAuthorId, authorId);
         wrapper.orderByDesc(Book::getUpdateTime);
         List<Book> books = bookMapper.selectList(wrapper);
-        
+
         return RestResp.ok(books.stream().map(this::convertToDto).collect(Collectors.toList()));
     }
 
+    // ========== 转换方法 ==========
+
     private BookInfoRespDto convertToDto(Book book) {
         Category category = categoryMapper.selectById(book.getCategoryId());
-        
+
         return BookInfoRespDto.builder()
                 .id(book.getId())
                 .bookName(book.getBookName())

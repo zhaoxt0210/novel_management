@@ -20,27 +20,33 @@ public interface BookService {
     RestResp<ChapterRespDto> getChapter(Long chapterId, Long userId);
     RestResp<Void> addVisitCount(Long bookId);
     RestResp<List<BookInfoRespDto>> listBooksByCategory(Long categoryId, String sortBy, Integer pageNum, Integer pageSize);
-    
+
     // 收藏功能
     RestResp<Void> addFavorite(Long userId, Long bookId);
     RestResp<Void> removeFavorite(Long userId, Long bookId);
     RestResp<Boolean> isFavorited(Long userId, Long bookId);
     RestResp<List<BookInfoRespDto>> getUserFavorites(Long userId);
-    
+
     // 书架功能
+    RestResp<Void> addToBookshelf(Long userId, Long bookId);
+    RestResp<Void> removeFromBookshelf(Long userId, Long bookId);
+    RestResp<Boolean> isInBookshelf(Long userId, Long bookId);
     RestResp<List<BookshelfRespDto>> getUserBookshelf(Long userId, String sortBy);
     RestResp<Void> updateReadProgress(ReadProgressReqDto dto);
-    
+
     // 阅读历史
     RestResp<List<ReadHistoryRespDto>> getReadHistory(Long userId);
-    
+
     // 评论功能
     RestResp<Void> addComment(CommentAddReqDto dto);
     RestResp<List<CommentRespDto>> getComments(Long bookId, Integer pageNum, Integer pageSize);
-    
+
     // 排行榜
     RestResp<List<BookInfoRespDto>> getRanking(String type, Integer limit);
-    
+
     // 作家功能 - 获取作者的所有小说
     RestResp<List<BookInfoRespDto>> getAuthorBooks(Long authorId);
+
+    // ========== 新增：收藏时自动加入书架 ==========
+    RestResp<Void> addFavoriteWithBookshelf(Long userId, Long bookId);
 }
