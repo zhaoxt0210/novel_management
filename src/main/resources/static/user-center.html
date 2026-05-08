@@ -343,27 +343,6 @@
         <div id="applyStatusContainer" style="margin-top: 15px;"></div>
     </section>
 
-    <section class="setting-card">
-        <div class="section-title"><i class="fas fa-bell"></i> 通知设置</div>
-        <div class="toggle-row">
-            <div class="toggle-label">新评论通知</div>
-            <select id="notifyComment" class="select">
-                <option value="on">开启</option>
-                <option value="off">关闭</option>
-            </select>
-        </div>
-        <div class="toggle-row">
-            <div class="toggle-label">系统公告通知</div>
-            <select id="notifySystem" class="select">
-                <option value="on">开启</option>
-                <option value="off">关闭</option>
-            </select>
-        </div>
-        <div class="btn-row" style="margin-top: 14px;">
-            <button id="saveNotifyBtn" class="btn btn-primary" type="button">保存通知设置</button>
-        </div>
-        <div class="tip">通知设置将保存在当前浏览器本地，便于多次访问保持一致体验。</div>
-    </section>
 </main>
 
 <div id="applyModal" class="modal">
@@ -436,7 +415,6 @@
 <script>
     let currentUserId = null;
     let currentUserData = null;
-    const notifyStorageKey = 'userNotifySettings';
 
     function setGlobalStatus(type, message) {
         const node = document.getElementById('globalStatus');
@@ -684,29 +662,7 @@
         showToast('密码修改功能暂未开放，请联系管理员', 'info');
     }
 
-    function loadNotifySettings() {
-        const raw = localStorage.getItem(notifyStorageKey);
-        if (!raw) return;
-        try {
-            const settings = JSON.parse(raw);
-            document.getElementById('notifyComment').value = settings.notifyComment || 'on';
-            document.getElementById('notifySystem').value = settings.notifySystem || 'on';
-        } catch (error) {
-            console.warn('通知设置解析失败', error);
-        }
-    }
-
-    function saveNotifySettings() {
-        const data = {
-            notifyComment: document.getElementById('notifyComment').value,
-            notifySystem: document.getElementById('notifySystem').value
-        };
-        localStorage.setItem(notifyStorageKey, JSON.stringify(data));
-        showToast('通知设置已保存');
-    }
-
     window.onload = async function() {
-        loadNotifySettings();
         await loadUserInfo();
         await loadApplyStatus();
 
@@ -714,7 +670,6 @@
         document.getElementById('refreshProfileBtn').addEventListener('click', loadUserInfo);
         document.getElementById('applyAuthorBtn').addEventListener('click', showApplyModal);
         document.getElementById('changePasswordBtn').addEventListener('click', changePassword);
-        document.getElementById('saveNotifyBtn').addEventListener('click', saveNotifySettings);
 
         window.addEventListener('click', function(event) {
             const modal = document.getElementById('applyModal');
