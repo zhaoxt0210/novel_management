@@ -7,9 +7,19 @@ spring:
     username: novel_root
     password: novel_123456
     hikari:
+      # 连接超时时间（毫秒）
       connection-timeout: 30000
-      maximum-pool-size: 10
-      minimum-idle: 5
+      # 等待连接池返回连接的超时时间
+      validation-timeout: 5000
+      # 连接最大存活时间（防止长时间不用的连接被数据库踢掉）
+      max-lifetime: 1800000     # 30分钟
+      # 空闲连接存活时间
+      idle-timeout: 600000      # 10分钟
+      # 核心参数调整
+      minimum-idle: 3           # 推荐改成 2~5
+      maximum-pool-size: 20     # 推荐改成 15~30（视并发量）
+      leak-detection-threshold: 60000   # 检测连接泄漏
+      initialization-fail-timeout: -1   # 启动时数据库不可用也不直接失败
 
 server:
   port: 8080
