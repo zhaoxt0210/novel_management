@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - 墨韵书阁</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #fff;
+            padding: 14px 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .title { font-size: 20px; font-weight: 700; }
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .page-wrap { padding: 22px 0 34px; }
+        .profile-card, .setting-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-bottom: 18px;
+        }
+        .profile-top {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .avatar {
+            width: 74px;
+            height: 74px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e74c3c, #f39c12);
+            color: #fff;
+            font-size: 28px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .user-name { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+        .meta { color: #888; font-size: 14px; }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .meta-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .meta-label { color: #888; font-size: 13px; margin-bottom: 4px; }
+        .meta-value { font-weight: 600; }
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .field { margin-bottom: 14px; }
+        .field label {
+            display: block;
+            margin-bottom: 6px;
+            color: #666;
+            font-size: 14px;
+        }
+        .input, .select {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            background: #fff;
+        }
+        .input:focus, .select:focus { border-color: #e74c3c; }
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .btn {
+            border: none;
+            border-radius: 20px;
+            padding: 9px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #e74c3c; color: #fff; }
+        .btn-primary:hover { background: #c0392b; }
+        .btn-ghost { background: #f2f2f2; color: #333; }
+        .tip {
+            margin-top: 12px;
+            color: #777;
+            font-size: 13px;
+            line-height: 1.6;
+            background: #fff6f4;
+            border: 1px solid #f5d3ce;
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+        .status {
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 14px;
+            font-size: 14px;
+        }
+        .status.loading { background: #f3f7ff; color: #3a66b0; }
+        .status.error { background: #fff1f0; color: #cf1322; }
+        .status.success { background: #f6ffed; color: #389e0d; }
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .toggle-row:last-child { border-bottom: none; }
+        .toggle-label { font-size: 14px; color: #555; }
+        .hidden { display: none; }
+        @media (max-width: 768px) {
+            .profile-grid, .form-row { grid-template-columns: 1fr; }
+            .title { font-size: 18px; }
+            .profile-top { align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="container header-content">
+        <div class="title"><i class="fas fa-user-circle"></i> 个人中心</div>
+        <a class="back-btn" href="/index.html"><i class="fas fa-arrow-left"></i> 返回首页</a>
+    </div>
+</header>
+
+<main class="container page-wrap">
+    <div id="globalStatus" class="status loading">正在加载个人信息...</div>
+
+    <section class="profile-card">
+        <div class="profile-top">
+            <div id="avatar" class="avatar">读</div>
+            <div>
+                <div id="displayName" class="user-name">--</div>
+                <div id="accountMeta" class="meta">账号信息加载中</div>
+            </div>
+        </div>
+        <div class="profile-grid">
+            <div class="meta-item">
+                <div class="meta-label">用户ID</div>
+                <div id="metaUserId" class="meta-value">--</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">账号角色</div>
+                <div id="metaRole" class="meta-value">--</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">邮箱</div>
+                <div id="metaEmail" class="meta-value">--</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">昵称</div>
+                <div id="metaNickname" class="meta-value">--</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="setting-card">
+        <div class="section-title"><i class="fas fa-sliders-h"></i> 资料设置</div>
+        <div class="form-row">
+            <div class="field">
+                <label for="nickname">昵称</label>
+                <input id="nickname" class="input" type="text" maxlength="50" placeholder="请输入昵称">
+            </div>
+            <div class="field">
+                <label for="email">邮箱</label>
+                <input id="email" class="input" type="email" maxlength="100" placeholder="请输入邮箱">
+            </div>
+        </div>
+        <div class="btn-row">
+            <button id="saveProfileBtn" class="btn btn-primary" type="button">保存资料</button>
+            <button id="refreshProfileBtn" class="btn btn-ghost" type="button">刷新</button>
+        </div>
+    </section>
+
+    <section class="setting-card">
+        <div class="section-title"><i class="fas fa-shield-alt"></i> 账号安全</div>
+        <div class="form-row">
+            <div class="field">
+                <label for="oldPassword">旧密码</label>
+                <input id="oldPassword" class="input" type="password" placeholder="请输入旧密码">
+            </div>
+            <div class="field">
+                <label for="newPassword">新密码</label>
+                <input id="newPassword" class="input" type="password" placeholder="请输入新密码">
+            </div>
+        </div>
+        <div class="btn-row">
+            <button id="changePasswordBtn" class="btn btn-ghost" type="button">修改密码</button>
+            <button id="applyAuthorBtn" class="btn btn-primary" type="button">申请成为作者</button>
+        </div>
+        <div id="applyStatusText" class="tip">正在加载作者申请状态...</div>
+    </section>
+
+    <section class="setting-card">
+        <div class="section-title"><i class="fas fa-bell"></i> 通知设置</div>
+        <div class="toggle-row">
+            <div class="toggle-label">新评论通知</div>
+            <select id="notifyComment" class="select">
+                <option value="on">开启</option>
+                <option value="off">关闭</option>
+            </select>
+        </div>
+        <div class="toggle-row">
+            <div class="toggle-label">系统公告通知</div>
+            <select id="notifySystem" class="select">
+                <option value="on">开启</option>
+                <option value="off">关闭</option>
+            </select>
+        </div>
+        <div class="btn-row" style="margin-top: 14px;">
+            <button id="saveNotifyBtn" class="btn btn-primary" type="button">保存通知设置</button>
+        </div>
+        <div class="tip">通知设置将保存在当前浏览器本地，便于多次访问保持一致体验。</div>
+    </section>
+</main>
+
+<script>
+    let currentUserId = null;
+    let currentUserData = null;
+    const notifyStorageKey = 'userNotifySettings';
+
+    function setGlobalStatus(type, message) {
+        const node = document.getElementById('globalStatus');
+        node.className = 'status ' + type;
+        node.textContent = message;
+    }
+
+    function getRoleName(role) {
+        if (role === 2) return '管理员';
+        if (role === 1) return '作者';
+        return '普通用户';
+    }
+
+    function getTokenAndUser() {
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('userId');
+        const username = localStorage.getItem('username');
+        if (!token || !userId || !username) {
+            alert('请先登录');
+            window.location.href = '/index.html';
+            return null;
+        }
+        return { token, userId, username };
+    }
+
+    function renderProfile(data) {
+        currentUserData = data;
+        const name = data.nickname || data.username || '未知用户';
+        document.getElementById('displayName').textContent = name;
+        document.getElementById('accountMeta').textContent = `账号：${data.username || '--'} | 角色：${getRoleName(data.role)}`;
+        document.getElementById('avatar').textContent = name.charAt(0).toUpperCase();
+
+        document.getElementById('metaUserId').textContent = data.userId || '--';
+        document.getElementById('metaRole').textContent = getRoleName(data.role);
+        document.getElementById('metaEmail').textContent = data.email || '未设置';
+        document.getElementById('metaNickname').textContent = data.nickname || '未设置';
+        document.getElementById('nickname').value = data.nickname || '';
+        document.getElementById('email').value = data.email || '';
+    }
+
+    async function loadUserInfo() {
+        const info = getTokenAndUser();
+        if (!info) return;
+        currentUserId = info.userId;
+
+        setGlobalStatus('loading', '正在加载个人信息...');
+        try {
+            const resp = await fetch(`/api/user/info/${currentUserId}`);
+            const result = await resp.json();
+            if (result.code !== 200 || !result.data) {
+                throw new Error(result.msg || '获取失败');
+            }
+            renderProfile(result.data);
+            setGlobalStatus('success', '个人信息加载完成');
+        } catch (error) {
+            console.error(error);
+            setGlobalStatus('error', '个人信息加载失败，请稍后重试');
+        }
+    }
+
+    async function loadApplyStatus() {
+        if (!currentUserId) return;
+        const node = document.getElementById('applyStatusText');
+        try {
+            const resp = await fetch(`/api/user/apply-status/${currentUserId}`);
+            const result = await resp.json();
+            if (result.code === 200 && result.data) {
+                const statusMap = { 0: '待审核', 1: '已通过', 2: '已拒绝' };
+                node.textContent = `作者申请状态：${statusMap[result.data.status] || '未知'}（${result.data.reason || '无补充说明'}）`;
+            } else {
+                node.textContent = '暂无作者申请记录，可直接提交申请。';
+            }
+        } catch (error) {
+            node.textContent = '作者申请状态加载失败，请稍后刷新。';
+        }
+    }
+
+    async function saveProfile() {
+        if (!currentUserId) return;
+        const nickname = document.getElementById('nickname').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const query = new URLSearchParams();
+        if (nickname) query.append('nickname', nickname);
+        if (email) query.append('email', email);
+        if (!query.toString()) {
+            alert('请至少填写一个字段后再保存');
+            return;
+        }
+
+        const saveBtn = document.getElementById('saveProfileBtn');
+        saveBtn.disabled = true;
+        saveBtn.textContent = '保存中...';
+        try {
+            const resp = await fetch(`/api/user/info/${currentUserId}?${query.toString()}`, { method: 'PUT' });
+            const result = await resp.json();
+            if (result.code !== 200) {
+                throw new Error(result.msg || '保存失败');
+            }
+            alert('资料保存成功');
+            await loadUserInfo();
+        } catch (error) {
+            alert(error.message || '保存失败，请稍后重试');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = '保存资料';
+        }
+    }
+
+    async function applyAuthor() {
+        if (!currentUserId) return;
+        const reason = prompt('请输入申请理由（至少 10 字）', '我持续创作原创小说，希望加入作者计划。');
+        if (!reason) return;
+        try {
+            const resp = await fetch(`/api/user/apply-author/${currentUserId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reason: reason })
+            });
+            const result = await resp.json();
+            if (result.code !== 200) {
+                throw new Error(result.msg || '提交失败');
+            }
+            alert('申请已提交，请等待审核');
+            await loadApplyStatus();
+        } catch (error) {
+            alert(error.message || '申请失败，请稍后重试');
+        }
+    }
+
+    function changePassword() {
+        const oldPwd = document.getElementById('oldPassword').value.trim();
+        const newPwd = document.getElementById('newPassword').value.trim();
+        if (!oldPwd || !newPwd) {
+            alert('请先填写旧密码和新密码');
+            return;
+        }
+        alert('当前后端暂未开放密码修改接口，已记录你的输入，可先通过管理员渠道重置。');
+    }
+
+    function loadNotifySettings() {
+        const raw = localStorage.getItem(notifyStorageKey);
+        if (!raw) return;
+        try {
+            const settings = JSON.parse(raw);
+            document.getElementById('notifyComment').value = settings.notifyComment || 'on';
+            document.getElementById('notifySystem').value = settings.notifySystem || 'on';
+        } catch (error) {
+            console.warn('通知设置解析失败', error);
+        }
+    }
+
+    function saveNotifySettings() {
+        const data = {
+            notifyComment: document.getElementById('notifyComment').value,
+            notifySystem: document.getElementById('notifySystem').value
+        };
+        localStorage.setItem(notifyStorageKey, JSON.stringify(data));
+        alert('通知设置已保存');
+    }
+
+    window.onload = async function() {
+        loadNotifySettings();
+        await loadUserInfo();
+        await loadApplyStatus();
+
+        document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
+        document.getElementById('refreshProfileBtn').addEventListener('click', loadUserInfo);
+        document.getElementById('applyAuthorBtn').addEventListener('click', applyAuthor);
+        document.getElementById('changePasswordBtn').addEventListener('click', changePassword);
+        document.getElementById('saveNotifyBtn').addEventListener('click', saveNotifySettings);
+    };
+</script>
+</body>
+</html>

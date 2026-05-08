@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的收藏 - 墨韵书阁</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        background: #f5f5f5;
+        color: #333;
+        min-height: 100vh;
+    }
+
+    .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px 0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .logo a {
+        color: white;
+        text-decoration: none;
+        font-size: 24px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 20px;
+    }
+
+    .nav-links a {
+        color: white;
+        text-decoration: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        transition: background 0.3s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+        background: rgba(255,255,255,0.2);
+    }
+
+    .back-btn {
+        background: rgba(255,255,255,0.2);
+        padding: 8px 20px;
+        border-radius: 25px;
+        color: white;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .back-btn:hover {
+        background: rgba(255,255,255,0.3);
+    }
+
+    .page-header {
+        background: white;
+        padding: 30px 0;
+        margin-bottom: 20px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .page-desc {
+        color: #999;
+    }
+
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .stat-number {
+        font-size: 32px;
+        font-weight: bold;
+        color: #e74c3c;
+    }
+
+    .stat-label {
+        color: #999;
+        margin-top: 5px;
+        font-size: 14px;
+    }
+
+    .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 15px 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .search-box {
+        display: flex;
+        gap: 10px;
+        flex: 1;
+        max-width: 400px;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 10px 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 25px;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .search-input:focus {
+        border-color: #e74c3c;
+    }
+
+    .search-btn {
+        padding: 10px 20px;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+    }
+
+    .favorites-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+        padding-bottom: 40px;
+    }
+
+    .book-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .book-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .book-cover {
+        height: 180px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 48px;
+    }
+
+    .book-status {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 4px 12px;
+        background: rgba(0,0,0,0.6);
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    .book-info {
+        padding: 15px;
+    }
+
+    .book-title {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .book-author {
+        color: #999;
+        font-size: 13px;
+        margin-bottom: 10px;
+    }
+
+    .book-desc {
+        color: #666;
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 12px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .book-stats {
+        display: flex;
+        gap: 15px;
+        font-size: 12px;
+        color: #999;
+        padding-top: 10px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .book-stats span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .card-actions {
+        display: flex;
+        gap: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .action-btn {
+        flex: 1;
+        padding: 8px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.3s;
+        text-align: center;
+    }
+
+    .action-btn.primary {
+        background: #3498db;
+        color: white;
+    }
+
+    .action-btn.primary:hover {
+        background: #2980b9;
+    }
+
+    .action-btn.danger {
+        background: #fee;
+        color: #e74c3c;
+    }
+
+    .action-btn.danger:hover {
+        background: #fdd;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+    }
+
+    .empty-icon {
+        font-size: 80px;
+        color: #ddd;
+        margin-bottom: 20px;
+    }
+
+    .empty-title {
+        font-size: 20px;
+        color: #999;
+        margin-bottom: 10px;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 50px;
+        color: #999;
+    }
+
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #27ae60;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        z-index: 2000;
+        display: none;
+        animation: slideIn 0.3s;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .toolbar {
+            flex-direction: column;
+            gap: 15px;
+        }
+        .search-box {
+            max-width: 100%;
+        }
+        .stats-cards {
+            grid-template-columns: 1fr;
+        }
+        .favorites-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+  </style>
+</head>
+<body>
+<div class="header">
+  <div class="container">
+    <div class="nav">
+      <div class="logo">
+        <a href="/">
+          <i class="fas fa-book-open"></i>
+          <span>墨韵书阁</span>
+        </a>
+      </div>
+      <div class="nav-links">
+        <a href="/">首页</a>
+        <a href="/rank.html">排行榜</a>
+        <a href="/category.html">分类书库</a>
+        <a href="/bookshelf.html">我的书架</a>
+        <a href="/favorites.html" class="active">我的收藏</a>
+      </div>
+      <a href="/" class="back-btn">
+        <i class="fas fa-home"></i> 返回首页
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="page-header">
+  <div class="container">
+    <h1 class="page-title">⭐我的收藏</h1>
+    <p class="page-desc">管理您收藏的小说，好书不错过</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="stats-cards">
+    <div class="stat-card">
+      <div class="stat-number" id="favoriteCount">0</div>
+      <div class="stat-label">收藏数量</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="totalWords">0</div>
+      <div class="stat-label">总字数(万)</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <input type="text" id="searchKeyword" class="search-input" placeholder="搜索收藏中的书籍...">
+      <button class="search-btn" onclick="searchBooks()">
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
+  </div>
+
+  <div id="favoritesGrid" class="favorites-grid">
+    <div class="loading">加载中...</div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  let token = null;
+  let userId = null;
+  let favoritesData = [];
+
+  window.onload = function() {
+      checkLogin();
+      loadFavorites();
+
+      document.getElementById('searchKeyword').addEventListener('keypress', function(e) {
+          if (e.keyCode === 13) {
+              searchBooks();
+          }
+      });
+  };
+
+  function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.background = type === 'error' ? '#e74c3c' : '#27ae60';
+      toast.style.display = 'block';
+      setTimeout(() => {
+          toast.style.display = 'none';
+      }, 2000);
+  }
+
+  function checkLogin() {
+      token = localStorage.getItem('token');
+      userId = localStorage.getItem('userId');
+
+      if (!token || !userId) {
+          showToast('请先登录', 'error');
+          setTimeout(() => {
+              window.location.href = '/';
+          }, 1500);
+          return;
+      }
+  }
+
+  async function loadFavorites() {
+      try {
+          document.getElementById('favoritesGrid').innerHTML = '<div class="loading">加载中...</div>';
+
+          const response = await fetch(`/api/favorites/${userId}`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await response.json();
+
+          if (data.code === 200) {
+              favoritesData = data.data || [];
+              updateStats();
+              renderFavorites(favoritesData);
+          } else {
+              showError(data.msg || '加载失败');
+          }
+      } catch (error) {
+          console.error('加载收藏失败:', error);
+          showError('网络错误，请检查网络连接');
+      }
+  }
+
+  function updateStats() {
+      const favoriteCount = favoritesData.length;
+      const totalWords = favoritesData.reduce((sum, book) => sum + (book.totalWords || 0), 0);
+
+      document.getElementById('favoriteCount').textContent = favoriteCount;
+      document.getElementById('totalWords').textContent = Math.floor(totalWords / 10000);
+  }
+
+  function renderFavorites(books) {
+      if (!books || books.length === 0) {
+          document.getElementById('favoritesGrid').innerHTML = `
+              <div class="empty-state">
+                  <div class="empty-icon">⭐</div>
+                  <div class="empty-title">暂无收藏</div>
+                  <div class="empty-desc">快去首页挑选喜欢的小说添加收藏吧~</div>
+                  <button class="action-btn primary" onclick="window.location.href='/'">
+                      <i class="fas fa-search"></i> 发现好书
+                  </button>
+              </div>
+          `;
+          return;
+      }
+
+      const html = books.map(book => `
+          <div class="book-card" onclick="viewBook(${book.id})">
+              <div class="book-cover">
+                  📖
+                  <div class="book-status">${book.status === 0 ? '连载中' : '已完结'}</div>
+              </div>
+              <div class="book-info">
+                  <div class="book-title">${book.bookName}</div>
+                  <div class="book-author">${book.authorName}</div>
+                  <div class="book-desc">${book.description || '暂无简介'}</div>
+                  <div class="book-stats">
+                      <span><i class="fas fa-eye"></i> ${book.visitCount || 0}</span>
+                      <span><i class="fas fa-heart"></i> ${book.favoriteCount || 0}</span>
+                      <span><i class="fas fa-file-alt"></i> ${(book.totalWords / 10000).toFixed(0)}万字</span>
+                  </div>
+                  <div class="card-actions" onclick="event.stopPropagation()">
+                      <button class="action-btn primary" onclick="viewBook(${book.id})">
+                          <i class="fas fa-book-open"></i> 查看详情
+                      </button>
+                      <button class="action-btn danger" onclick="removeFavorite(${book.id}, '${book.bookName}')">
+                          <i class="fas fa-trash-alt"></i> 取消收藏
+                      </button>
+                  </div>
+              </div>
+          </div>
+      `).join('');
+
+      document.getElementById('favoritesGrid').innerHTML = html;
+  }
+
+  function searchBooks() {
+      const keyword = document.getElementById('searchKeyword').value.trim();
+
+      if (!keyword) {
+          renderFavorites(favoritesData);
+          return;
+      }
+
+      const filtered = favoritesData.filter(book =>
+          book.bookName.includes(keyword) ||
+          book.authorName.includes(keyword)
+      );
+
+      renderFavorites(filtered);
+  }
+
+  function viewBook(bookId) {
+      window.location.href = `/book.html?id=${bookId}`;
+  }
+
+  async function removeFavorite(bookId, bookName) {
+      if (!confirm(`确定要取消收藏《${bookName}》吗？`)) return;
+
+      try {
+          const response = await fetch(`/api/favorites/remove?userId=${userId}&bookId=${bookId}`, {
+              method: 'DELETE',
+              headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await response.json();
+
+          if (data.code === 200) {
+              showToast('已取消收藏');
+              loadFavorites();
+          } else {
+              showToast(data.msg || '操作失败', 'error');
+          }
+      } catch (error) {
+          console.error('取消收藏失败:', error);
+          showToast('操作失败，请稍后重试', 'error');
+      }
+  }
+
+  function showError(message) {
+      document.getElementById('favoritesGrid').innerHTML = `
+          <div class="empty-state">
+              <div class="empty-icon">⚠️</div>
+              <div class="empty-title">加载失败</div>
+              <div class="empty-desc">${message}</div>
+              <button class="action-btn primary" onclick="loadFavorites()">
+                  <i class="fas fa-redo"></i> 重试
+              </button>
+          </div>
+      `;
+  }
+</script>
+</body>
+</html>

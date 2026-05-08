@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的作品 - 墨韵书阁</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #fff;
+            padding: 14px 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .title { font-size: 20px; font-weight: 700; }
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .page-wrap { padding: 20px 0 28px; }
+        .toolbar, .list-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .toolbar-left {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .input, .select {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 14px;
+            min-width: 170px;
+        }
+        .btn {
+            border: none;
+            border-radius: 20px;
+            padding: 8px 14px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .btn-primary { background: #e74c3c; color: #fff; }
+        .btn-ghost { background: #f2f2f2; color: #333; }
+        .status {
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 14px;
+            font-size: 14px;
+        }
+        .status.loading { background: #f3f7ff; color: #3a66b0; }
+        .status.error { background: #fff1f0; color: #cf1322; }
+        .status.success { background: #f6ffed; color: #389e0d; }
+        .work-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .work-item {
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+        .work-item:hover {
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+            border-color: #e7e7e7;
+        }
+        .cover {
+            width: 76px;
+            height: 100px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .work-main {
+            flex: 1;
+            min-width: 0;
+        }
+        .work-title {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .meta {
+            color: #777;
+            font-size: 13px;
+            line-height: 1.7;
+            margin-bottom: 8px;
+        }
+        .desc {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.6;
+            min-height: 40px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .action-btn {
+            border: 1px solid #e0e0e0;
+            background: #fff;
+            color: #555;
+            border-radius: 16px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .action-btn:hover { border-color: #e74c3c; color: #e74c3c; }
+        .pagination {
+            margin-top: 18px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .page-btn {
+            border: 1px solid #ddd;
+            background: #fff;
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 13px;
+            min-width: 34px;
+        }
+        .page-btn.active {
+            background: #e74c3c;
+            border-color: #e74c3c;
+            color: #fff;
+        }
+        .empty {
+            text-align: center;
+            color: #888;
+            padding: 30px 0;
+        }
+        @media (max-width: 900px) {
+            .work-list { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .toolbar { flex-direction: column; align-items: stretch; }
+            .toolbar-left { width: 100%; }
+            .input, .select { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="container header-content">
+        <div class="title"><i class="fas fa-feather-alt"></i> 我的作品</div>
+        <a class="back-btn" href="/index.html"><i class="fas fa-arrow-left"></i> 返回首页</a>
+    </div>
+</header>
+
+<main class="container page-wrap">
+    <div id="globalStatus" class="status loading">正在加载作品列表...</div>
+
+    <section class="toolbar">
+        <div class="toolbar-left">
+            <input id="searchKeyword" class="input" placeholder="搜索作品名">
+            <select id="statusFilter" class="select">
+                <option value="all">全部状态</option>
+                <option value="0">连载中</option>
+                <option value="1">已完结</option>
+                <option value="2">已下架</option>
+            </select>
+            <select id="pageSizeSelect" class="select">
+                <option value="5">每页 5 条</option>
+                <option value="10" selected>每页 10 条</option>
+                <option value="20">每页 20 条</option>
+            </select>
+        </div>
+        <div>
+            <button id="searchBtn" class="btn btn-primary" type="button">查询</button>
+            <button id="resetBtn" class="btn btn-ghost" type="button">重置</button>
+        </div>
+    </section>
+
+    <section class="list-card">
+        <div id="workList" class="work-list"></div>
+        <div id="pagination" class="pagination"></div>
+    </section>
+</main>
+
+<script>
+    let userId = null;
+    let allWorks = [];
+    let filteredWorks = [];
+    let currentPage = 1;
+    let pageSize = 10;
+
+    function setStatus(type, text) {
+        const node = document.getElementById('globalStatus');
+        node.className = 'status ' + type;
+        node.textContent = text;
+    }
+
+    function ensureLogin() {
+        const token = localStorage.getItem('token');
+        const uid = localStorage.getItem('userId');
+        if (!token || !uid) {
+            alert('请先登录');
+            window.location.href = '/index.html';
+            return false;
+        }
+        userId = uid;
+        return true;
+    }
+
+    function statusText(status) {
+        if (status === 0) return '连载中';
+        if (status === 1) return '已完结';
+        if (status === 2) return '已下架';
+        return '未知';
+    }
+
+    function formatDate(isoDate) {
+        if (!isoDate) return '--';
+        const date = new Date(isoDate);
+        if (Number.isNaN(date.getTime())) return isoDate;
+        return date.toLocaleString('zh-CN', { hour12: false });
+    }
+
+    async function loadWorks() {
+        if (!ensureLogin()) return;
+        setStatus('loading', '正在加载作品列表...');
+        try {
+            const resp = await fetch(`/api/author/${userId}/books`);
+            const result = await resp.json();
+            if (result.code !== 200) {
+                throw new Error(result.msg || '加载失败');
+            }
+            allWorks = Array.isArray(result.data) ? result.data : [];
+            applyFilterAndRender();
+            setStatus('success', `共加载 ${allWorks.length} 部作品`);
+        } catch (error) {
+            console.error(error);
+            setStatus('error', error.message || '加载失败，请稍后重试');
+            document.getElementById('workList').innerHTML = '<div class="empty">加载失败</div>';
+            document.getElementById('pagination').innerHTML = '';
+        }
+    }
+
+    function applyFilterAndRender() {
+        const keyword = document.getElementById('searchKeyword').value.trim();
+        const status = document.getElementById('statusFilter').value;
+        pageSize = Number(document.getElementById('pageSizeSelect').value) || 10;
+
+        filteredWorks = allWorks.filter(item => {
+            const matchKeyword = !keyword || (item.bookName || '').includes(keyword);
+            const matchStatus = status === 'all' || String(item.status) === status;
+            return matchKeyword && matchStatus;
+        });
+        currentPage = 1;
+        renderCurrentPage();
+    }
+
+    function renderCurrentPage() {
+        const total = filteredWorks.length;
+        const start = (currentPage - 1) * pageSize;
+        const current = filteredWorks.slice(start, start + pageSize);
+        const listNode = document.getElementById('workList');
+
+        if (!total) {
+            listNode.innerHTML = '<div class="empty">暂无符合条件的作品</div>';
+            document.getElementById('pagination').innerHTML = '';
+            return;
+        }
+
+        listNode.innerHTML = current.map(book => {
+            const cover = book.cover ? `<img src="${book.cover}" alt="封面">` : '<i class="fas fa-book"></i>';
+            return `
+                <article class="work-item">
+                    <div class="cover">${cover}</div>
+                    <div class="work-main">
+                        <div class="work-title">${book.bookName || '未命名作品'}</div>
+                        <div class="meta">
+                            <div>状态：${statusText(book.status)}</div>
+                            <div>更新时间：${formatDate(book.updateTime)}</div>
+                            <div>分类：${book.categoryName || '未分类'} | 字数：${book.totalWords || 0}</div>
+                        </div>
+                        <div class="desc">${book.description || '暂无作品简介'}</div>
+                        <div class="actions">
+                            <button class="action-btn" onclick="viewBook(${book.id})">查看详情</button>
+                            <button class="action-btn" onclick="editBookStatus(${book.id}, ${book.status})">编辑状态</button>
+                            <button class="action-btn" onclick="deleteBook(${book.id})">删除</button>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }).join('');
+
+        renderPagination(total);
+    }
+
+    function renderPagination(totalCount) {
+        const pageCount = Math.ceil(totalCount / pageSize);
+        const pager = document.getElementById('pagination');
+        if (pageCount <= 1) {
+            pager.innerHTML = '';
+            return;
+        }
+
+        let html = `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">上一页</button>`;
+        for (let i = 1; i <= pageCount; i++) {
+            html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+        }
+        html += `<button class="page-btn" ${currentPage === pageCount ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">下一页</button>`;
+        pager.innerHTML = html;
+    }
+
+    function changePage(page) {
+        const pageCount = Math.ceil(filteredWorks.length / pageSize);
+        if (page < 1 || page > pageCount) return;
+        currentPage = page;
+        renderCurrentPage();
+    }
+
+    function viewBook(bookId) {
+        window.location.href = `/book.html?id=${bookId}`;
+    }
+
+    async function updateStatus(bookId, status) {
+        const resp = await fetch(`/api/author/${userId}/book/${bookId}/status?status=${status}`, { method: 'PUT' });
+        const result = await resp.json();
+        if (result.code !== 200) {
+            throw new Error(result.msg || '操作失败');
+        }
+    }
+
+    async function editBookStatus(bookId, currentStatus) {
+        const input = prompt('请输入新状态：0=连载中，1=已完结，2=已下架', String(currentStatus ?? 0));
+        if (input === null) return;
+        const nextStatus = Number(input);
+        if (![0, 1, 2].includes(nextStatus)) {
+            alert('状态值无效');
+            return;
+        }
+        try {
+            await updateStatus(bookId, nextStatus);
+            alert('状态更新成功');
+            await loadWorks();
+        } catch (error) {
+            alert(error.message || '状态更新失败');
+        }
+    }
+
+    async function deleteBook(bookId) {
+        if (!confirm('确认删除该作品吗？将执行下架操作（状态=2）。')) return;
+        try {
+            await updateStatus(bookId, 2);
+            alert('作品已下架');
+            await loadWorks();
+        } catch (error) {
+            alert(error.message || '删除失败');
+        }
+    }
+
+    function resetFilters() {
+        document.getElementById('searchKeyword').value = '';
+        document.getElementById('statusFilter').value = 'all';
+        document.getElementById('pageSizeSelect').value = '10';
+        applyFilterAndRender();
+    }
+
+    window.onload = async function() {
+        document.getElementById('searchBtn').addEventListener('click', applyFilterAndRender);
+        document.getElementById('resetBtn').addEventListener('click', resetFilters);
+        document.getElementById('pageSizeSelect').addEventListener('change', applyFilterAndRender);
+        await loadWorks();
+    };
+</script>
+</body>
+</html>
