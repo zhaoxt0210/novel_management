@@ -45,6 +45,7 @@ com/novel/mapper/CategoryMapper.class
 com/novel/service/CategoryService.class
 com/novel/entity/Admin.class
 com/novel/dto/resp/CommentRespDto.class
+com/novel/config/CategoryNameUpdater.class
 com/novel/controller/front/UserController.class
 com/novel/dto/req/RankManageReqDto.class
 com/novel/dto/resp/UserInfoRespDto.class
