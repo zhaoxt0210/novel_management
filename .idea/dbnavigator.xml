@@ -22,6 +22,12 @@
       <model-selection />
     </selection-state>
   </component>
+  <component name="DBNavigator.Project.DatabaseBrowserManager">
+    <autoscroll-to-editor value="false" />
+    <autoscroll-from-editor value="true" />
+    <show-object-properties value="true" />
+    <loaded-nodes />
+  </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="fb89bd5b-b448-4b9d-8238-9766df6e3d7c">
       <console name="Connection" type="STANDARD" schema="mysql" session="Main" />
@@ -31,7 +37,9 @@
     <last-used-providers />
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files />
+    <open-files>
+      <object connection-id="fb89bd5b-b448-4b9d-8238-9766df6e3d7c" object-ref="consoles/Connection" />
+    </open-files>
   </component>
   <component name="DBNavigator.Project.DatabasePrerequisiteManager">
     <prerequisites />

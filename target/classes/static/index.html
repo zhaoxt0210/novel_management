@@ -6,6 +6,7 @@
     <title>墨韵书阁 - 精彩小说在线阅读</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* 样式保持不变 */
         * {
             margin: 0;
             padding: 0;
@@ -890,25 +891,53 @@
     }
 
     async function searchBooks() {
-        const keyword = document.getElementById('searchKeyword').value;
+        const keyword = document.getElementById('searchKeyword').value.trim();
+
         if (!keyword) {
             loadBooks();
+            document.getElementById('sectionTitle').innerHTML = '热门推荐';
             return;
         }
+
+        const booksListEl = document.getElementById('booksList');
+        booksListEl.innerHTML = '<div style="text-align: center; padding: 50px;">搜索中...</div>';
 
         try {
             const response = await fetch('/api/book/search', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ keyword: keyword, pageNum: 1, pageSize: 20 })
+                body: JSON.stringify({
+                    keyword: keyword,
+                    pageNum: 1,
+                    pageSize: 20
+                })
             });
             const data = await response.json();
+
             if (data.code === 200) {
-                renderBooks(data.data.list);
-                document.getElementById('sectionTitle').innerHTML = `搜索结果: "${keyword}"`;
+                const searchResult = data.data;
+                const books = searchResult.list || searchResult || [];
+
+                if (books.length === 0) {
+                    booksListEl.innerHTML = `
+                        <div style="text-align: center; padding: 50px;">
+                            <i class="fas fa-search" style="font-size: 48px; color: #ccc;"></i>
+                            <p style="margin-top: 20px; color: #999;">未找到与"${escapeHtml(keyword)}"相关的书籍</p>
+                            <p style="color: #ccc; font-size: 14px;">试试其他关键词吧~</p>
+                        </div>
+                    `;
+                    document.getElementById('sectionTitle').innerHTML = `搜索结果: "${keyword}"`;
+                    return;
+                }
+
+                renderBooks(books);
+                document.getElementById('sectionTitle').innerHTML = `搜索结果: "${keyword}" (共${searchResult.total || books.length}条)`;
+            } else {
+                booksListEl.innerHTML = '<div style="text-align: center; padding: 50px;">' + data.msg + '</div>';
             }
         } catch (error) {
             console.error('搜索失败:', error);
+            booksListEl.innerHTML = '<div style="text-align: center; padding: 50px;">搜索失败，请检查网络</div>';
         }
     }
 

@@ -565,29 +565,50 @@
             loadBooks();
         }
 
-        function searchBooks() {
-            const keyword = document.getElementById('searchKeyword').value.trim();
-            
-            if (!keyword) {
-                loadBooks();
-                return;
-            }
+    function searchBooks() {
+        const keyword = document.getElementById('searchKeyword').value.trim();
 
-            const filtered = allBooks.filter(book => 
-                book.bookName.includes(keyword) || 
-                book.authorName.includes(keyword)
-            );
-            
-            renderBooks(filtered);
-            
-            if (filtered.length === 0) {
-                document.getElementById('booksList').innerHTML += `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 20px; color: #999;">
-                        未找到匹配"${keyword}"的书籍
-                    </div>
-                `;
-            }
+        if (!keyword) {
+            loadBooks();
+            document.getElementById('categoryTitle').innerHTML = currentCategoryId ?
+                (categories.find(c => c.id === currentCategoryId)?.name || '分类书库') :
+                '热门推荐';
+            return;
         }
+
+        const listEl = document.getElementById('booksList');
+        listEl.innerHTML = '<div class="loading">搜索中...</div>';
+
+        fetch('/api/book/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ keyword: keyword, pageNum: 1, pageSize: 50 })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 200) {
+                const books = data.data.list || data.data || [];
+                if (books.length === 0) {
+                    listEl.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1/-1;">
+                            <div class="empty-icon">🔍</div>
+                            <div class="empty-title">未找到"${escapeHtml(keyword)}"的相关书籍</div>
+                        </div>
+                    `;
+                } else {
+                    renderBooks(books);
+                }
+                document.getElementById('categoryTitle').innerHTML = `搜索: "${keyword}"`;
+                document.getElementById('pagination').innerHTML = '';
+            } else {
+                listEl.innerHTML = '<div class="loading">' + data.msg + '</div>';
+            }
+        })
+        .catch(error => {
+            console.error('搜索失败:', error);
+            listEl.innerHTML = '<div class="loading">搜索失败，请稍后重试</div>';
+        });
+    }
 
         function viewBook(bookId) {
             window.location.href = `/book.html?id=${bookId}`;
