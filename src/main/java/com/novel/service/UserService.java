@@ -15,4 +15,5 @@ public interface UserService {
     RestResp<Void> updateUserInfo(Long userId, String nickname, String email);
     RestResp<Void> applyForAuthor(Long userId, AuthorApplyReqDto dto);
     RestResp<AuthorApplyRespDto> getApplyStatus(Long userId);
+    RestResp<Void> changePassword(Long userId, String oldPassword, String newPassword);
 }

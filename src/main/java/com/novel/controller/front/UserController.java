@@ -60,4 +60,12 @@ public class UserController {
     public RestResp<AuthorApplyRespDto> getApplyStatus(@PathVariable Long userId) {
         return userService.getApplyStatus(userId);
     }
+
+    @Operation(summary = "修改密码")
+    @PutMapping("/change-password/{userId}")
+    public RestResp<Void> changePassword(@PathVariable Long userId,
+                                          @RequestParam String oldPassword,
+                                          @RequestParam String newPassword) {
+        return userService.changePassword(userId, oldPassword, newPassword);
+    }
 }

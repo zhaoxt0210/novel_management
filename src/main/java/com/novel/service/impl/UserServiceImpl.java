@@ -184,4 +184,30 @@ public class UserServiceImpl implements UserService {
                 .createTime(apply.getCreateTime())
                 .build());
     }
+
+    @Override
+    public RestResp<Void> changePassword(Long userId, String oldPassword, String newPassword) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return RestResp.error("用户不存在");
+        }
+
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            return RestResp.error("旧密码错误");
+        }
+
+        if (newPassword == null || newPassword.trim().length() < 6) {
+            return RestResp.error("新密码长度不能少于6位");
+        }
+
+        if (newPassword.trim().length() > 100) {
+            return RestResp.error("新密码长度不能超过100位");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword.trim()));
+        user.setUpdateTime(LocalDateTime.now());
+        userMapper.updateById(user);
+
+        return RestResp.ok();
+    }
 }
