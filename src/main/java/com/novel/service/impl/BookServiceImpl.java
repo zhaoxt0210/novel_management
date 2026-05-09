@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;  // 添加这一行导入
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -126,7 +126,7 @@ public class BookServiceImpl implements BookService {
                     .addTime(fav.getCreateTime())
                     .lastReadTime(fav.getLastReadTime())
                     .build();
-        }).filter(Objects::nonNull).collect(Collectors.toList()));  // 使用 Objects::nonNull
+        }).filter(Objects::nonNull).collect(Collectors.toList()));
     }
 
     @Override
@@ -512,6 +512,59 @@ public class BookServiceImpl implements BookService {
 
         return RestResp.ok(books.stream().map(this::convertToDto).collect(Collectors.toList()));
     }
+//
+//    // ========== 新增推荐方法实现 ==========
+//
+//    @Override
+//    public RestResp<List<BookInfoRespDto>> getLatestRecommend(Integer limit) {
+//        if (limit == null || limit <= 0) {
+//            limit = 10;
+//        }
+//        try {
+//            List<Book> books = bookMapper.selectLatestRecommend(limit);
+//            if (books == null || books.isEmpty()) {
+//                return RestResp.ok(List.of());
+//            }
+//            return RestResp.ok(books.stream().map(this::convertToDto).collect(Collectors.toList()));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return RestResp.error("获取最新推荐失败：" + e.getMessage());
+//        }
+//    }
+//
+//    @Override
+//    public RestResp<List<BookInfoRespDto>> getHottestRecommend(Integer limit) {
+//        if (limit == null || limit <= 0) {
+//            limit = 10;
+//        }
+//        try {
+//            List<Book> books = bookMapper.selectHottestRecommend(limit);
+//            if (books == null || books.isEmpty()) {
+//                return RestResp.ok(List.of());
+//            }
+//            return RestResp.ok(books.stream().map(this::convertToDto).collect(Collectors.toList()));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return RestResp.error("获取最热推荐失败：" + e.getMessage());
+//        }
+//    }
+//
+//    @Override
+//    public RestResp<List<BookInfoRespDto>> getMostFavoritedRecommend(Integer limit) {
+//        if (limit == null || limit <= 0) {
+//            limit = 10;
+//        }
+//        try {
+//            List<Book> books = bookMapper.selectMostFavoritedRecommend(limit);
+//            if (books == null || books.isEmpty()) {
+//                return RestResp.ok(List.of());
+//            }
+//            return RestResp.ok(books.stream().map(this::convertToDto).collect(Collectors.toList()));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return RestResp.error("获取收藏推荐失败：" + e.getMessage());
+//        }
+//    }
 
     // ========== 转换方法 ==========
 
@@ -528,6 +581,7 @@ public class BookServiceImpl implements BookService {
                 .cover(book.getCover())
                 .description(book.getDescription())
                 .status(book.getStatus())
+                .auditStatus(book.getAuditStatus())
                 .visitCount(book.getVisitCount())
                 .favoriteCount(book.getFavoriteCount())
                 .totalWords(book.getTotalWords())
@@ -544,5 +598,112 @@ public class BookServiceImpl implements BookService {
                 .chapterName(chapter.getChapterName())
                 .wordCount(chapter.getWordCount())
                 .build();
+    }
+    // ========== 新增推荐方法实现（添加日志）==========
+
+    @Override
+    public RestResp<List<BookInfoRespDto>> getLatestRecommend(Integer limit) {
+        if (limit == null || limit <= 0) {
+            limit = 10;
+        }
+        try {
+            System.out.println("=== 获取最新推荐 ===");
+            System.out.println("limit: " + limit);
+
+            List<Book> books = bookMapper.selectLatestRecommend(limit);
+
+            System.out.println("查询结果数量: " + (books == null ? "null" : books.size()));
+            if (books != null && !books.isEmpty()) {
+                for (Book book : books) {
+                    System.out.println("作品: " + book.getBookName() +
+                            ", 阅读量: " + book.getVisitCount() +
+                            ", 收藏量: " + book.getFavoriteCount() +
+                            ", 热度: " + (book.getVisitCount() + book.getFavoriteCount()) +
+                            ", 审核状态: " + book.getAuditStatus());
+                }
+            } else {
+                System.out.println("查询结果为空，尝试不限制审核状态的查询");
+                List<Book> allBooks = bookMapper.selectList(null);
+                System.out.println("数据库中所有作品数量: " + allBooks.size());
+                for (Book book : allBooks) {
+                    System.out.println("  - " + book.getBookName() +
+                            ", audit_status: " + book.getAuditStatus() +
+                            ", 阅读量: " + book.getVisitCount() +
+                            ", 收藏量: " + book.getFavoriteCount());
+                }
+            }
+
+            if (books == null || books.isEmpty()) {
+                return RestResp.ok(List.of());
+            }
+            return RestResp.ok(books.stream().map(this::convertToDto).collect(Collectors.toList()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return RestResp.error("获取最新推荐失败：" + e.getMessage());
+        }
+    }
+
+    @Override
+    public RestResp<List<BookInfoRespDto>> getHottestRecommend(Integer limit) {
+        if (limit == null || limit <= 0) {
+            limit = 10;
+        }
+        try {
+            System.out.println("=== 获取最热推荐 ===");
+            System.out.println("limit: " + limit);
+
+            List<Book> books = bookMapper.selectHottestRecommend(limit);
+
+            System.out.println("查询结果数量: " + (books == null ? "null" : books.size()));
+
+            if (books == null || books.isEmpty()) {
+                System.out.println("查询结果为空，执行测试查询...");
+                List<Book> testBooks = bookMapper.selectHottestRecommendTest(20);
+                System.out.println("测试查询结果数量: " + testBooks.size());
+                for (Book book : testBooks) {
+                    System.out.println("  - " + book.getBookName() +
+                            ", 阅读量: " + book.getVisitCount() +
+                            ", 收藏量: " + book.getFavoriteCount() +
+                            ", 热度: " + (book.getVisitCount() + book.getFavoriteCount()));
+                }
+                return RestResp.ok(List.of());
+            }
+
+            return RestResp.ok(books.stream().map(this::convertToDto).collect(Collectors.toList()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return RestResp.error("获取最热推荐失败：" + e.getMessage());
+        }
+    }
+
+    @Override
+    public RestResp<List<BookInfoRespDto>> getMostFavoritedRecommend(Integer limit) {
+        if (limit == null || limit <= 0) {
+            limit = 10;
+        }
+        try {
+            System.out.println("=== 获取收藏推荐 ===");
+            System.out.println("limit: " + limit);
+
+            List<Book> books = bookMapper.selectMostFavoritedRecommend(limit);
+
+            System.out.println("查询结果数量: " + (books == null ? "null" : books.size()));
+
+            if (books == null || books.isEmpty()) {
+                System.out.println("查询结果为空，执行测试查询...");
+                List<Book> testBooks = bookMapper.selectMostFavoritedRecommendTest(20);
+                System.out.println("测试查询结果数量: " + testBooks.size());
+                for (Book book : testBooks) {
+                    System.out.println("  - " + book.getBookName() +
+                            ", 收藏量: " + book.getFavoriteCount());
+                }
+                return RestResp.ok(List.of());
+            }
+
+            return RestResp.ok(books.stream().map(this::convertToDto).collect(Collectors.toList()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return RestResp.error("获取收藏推荐失败：" + e.getMessage());
+        }
     }
 }
