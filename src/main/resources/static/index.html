@@ -571,8 +571,10 @@
                 <a href="#" class="active" onclick="loadBooks('home')">首页</a>
                 <a href="/rank.html">排行榜</a>
                 <a href="/category.html">分类书库</a>
-                <a href="#" onclick="loadFavorites()">我的书架</a>
-                <a href="#" onclick="loadMyFavorites()">我的收藏</a>
+                <span id="userOnlyMenu">
+                    <a href="#" onclick="loadFavorites()">我的书架</a>
+                    <a href="#" onclick="loadMyFavorites()">我的收藏</a>
+                </span>
             </div>
             <div class="user-actions" id="authSection">
                 <button class="btn btn-outline" onclick="showLoginModal()">登录</button>
@@ -581,10 +583,7 @@
             </div>
             <div class="user-dropdown" id="userSection" style="display: none;">
                 <div class="user-avatar" id="userAvatar">读</div>
-                <div class="dropdown-menu">
-                    <a href="#" onclick="showUserInfo()">个人中心</a>
-                    <a href="#" onclick="showMyBooks()">我的作品</a>
-                    <a href="#" onclick="logout()">退出登录</a>
+                <div class="dropdown-menu" id="userMenu">
                 </div>
             </div>
         </div>
@@ -759,11 +758,41 @@
     function checkLoginStatus() {
         token = localStorage.getItem('token');
         const username = localStorage.getItem('username');
+        const role = localStorage.getItem('role');
         if (token && username) {
-            currentUser = { username: username, role: localStorage.getItem('role') };
+            currentUser = { username: username, role: role };
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('userSection').style.display = 'block';
             document.getElementById('userAvatar').innerText = username.charAt(0).toUpperCase();
+            renderUserMenu(role);
+        }
+        updateUserOnlyMenu(role);
+    }
+
+    function updateUserOnlyMenu(role) {
+        const userOnlyMenu = document.getElementById('userOnlyMenu');
+        if (userOnlyMenu) {
+            if (role === '2') {
+                userOnlyMenu.style.display = 'none';
+            } else {
+                userOnlyMenu.style.display = 'inline';
+            }
+        }
+    }
+
+    function renderUserMenu(role) {
+        const userMenu = document.getElementById('userMenu');
+        if (role === '2') {
+            userMenu.innerHTML = `
+                <a href="/admin/index.html"><i class="fas fa-user-check"></i> 审批管理</a>
+                <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> 退出登录</a>
+            `;
+        } else {
+            userMenu.innerHTML = `
+                <a href="#" onclick="showUserInfo()"><i class="fas fa-user"></i> 个人中心</a>
+                <a href="#" onclick="showMyBooks()"><i class="fas fa-book"></i> 我的作品</a>
+                <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> 退出登录</a>
+            `;
         }
     }
 

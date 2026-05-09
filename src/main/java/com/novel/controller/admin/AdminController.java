@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Tag(name = "管理员模块", description = "管理员后台接口")
 @RestController
@@ -122,13 +121,6 @@ public class AdminController {
     @DeleteMapping("/categories/{categoryId}")
     public RestResp<Void> deleteCategory(@PathVariable Long categoryId) {
         return adminService.deleteCategory(categoryId);
-    }
-
-    // ========== 统计数据 ==========
-    @Operation(summary = "获取统计数据")
-    @GetMapping("/statistics")
-    public RestResp<Map<String, Object>> getStatistics() {
-        return adminService.getStatistics();
     }
 
     // ========== 密码重置 ==========

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理中心 - 墨韵书阁后台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .btn-logout {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .dashboard {
+            padding: 40px 0;
+        }
+
+        .section-title {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-align: center;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+        }
+
+        .action-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 20px;
+        }
+
+        .action-icon.audit {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .action-icon.rank {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .action-icon.books {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+        }
+
+        .action-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .action-desc {
+            color: #999;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .action-badge {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 5px 15px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px 0;
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 520px) {
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="nav">
+                <div class="logo">
+                    <i class="fas fa-crown"></i> 墨韵书阁管理中心
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar" id="adminAvatar">管</div>
+                    <span id="adminName">管理员</span>
+                    <button class="btn-logout" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> 退出
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <div class="container">
+            <h1 class="section-title">
+                <i class="fas fa-rocket"></i> 快捷操作
+            </h1>
+
+            <div class="quick-actions">
+                <div class="action-card" onclick="goToAuthorAudit()">
+                    <div class="action-icon audit">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="action-title">作者审核</div>
+                    <div class="action-desc">审核用户的作者申请，管理作者资格</div>
+                    <span class="action-badge" id="pendingAuthorCount">0 条待审核</span>
+                </div>
+                <div class="action-card" onclick="goToBookAudit()">
+                    <div class="action-icon books">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="action-title">作品审核</div>
+                    <div class="action-desc">审核用户发布的小说作品</div>
+                    <span class="action-badge" id="pendingBookCount">0 条待审核</span>
+                </div>
+                <div class="action-card" onclick="goToRankManage()">
+                    <div class="action-icon rank">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="action-title">排行榜管理</div>
+                    <div class="action-desc">管理小说排行榜，设置推荐内容</div>
+                    <span class="action-badge">管理榜单</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2024 墨韵书阁管理中心 | 享受阅读的乐趣</p>
+    </div>
+
+    <script>
+        window.onload = function() {
+            loadAdminInfo();
+            loadPendingCounts();
+        };
+
+        function loadAdminInfo() {
+            const username = localStorage.getItem('username');
+            if (username) {
+                document.getElementById('adminName').textContent = username;
+                document.getElementById('adminAvatar').textContent = username.charAt(0).toUpperCase();
+            }
+        }
+
+        async function loadPendingCounts() {
+            try {
+                const [authorResp, bookResp] = await Promise.all([
+                    fetch('/api/admin/author-applies?status=0'),
+                    fetch('/api/admin/books/pending')
+                ]);
+
+                const authorData = await authorResp.json();
+                const bookData = await bookResp.json();
+
+                const authorCount = authorData.code === 200 ? (authorData.data?.length || 0) : 0;
+                const bookCount = bookData.code === 200 ? (bookData.data?.length || 0) : 0;
+
+                document.getElementById('pendingAuthorCount').textContent = authorCount + ' 条待审核';
+                document.getElementById('pendingBookCount').textContent = bookCount + ' 条待审核';
+            } catch (error) {
+                console.error('加载待审核数量失败:', error);
+            }
+        }
+
+        function goToAuthorAudit() {
+            window.location.href = '/admin/author-audit.html';
+        }
+
+        function goToBookAudit() {
+            window.location.href = '/admin/book-audit.html';
+        }
+
+        function goToRankManage() {
+            window.location.href = '/admin/rank.html';
+        }
+
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.clear();
+                window.location.href = '/';
+            }
+        }
+    </script>
+</body>
+</html>

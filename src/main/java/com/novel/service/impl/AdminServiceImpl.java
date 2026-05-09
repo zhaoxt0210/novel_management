@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -260,32 +259,6 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public RestResp<Map<String, Object>> getStatistics() {
-        Map<String, Object> stats = new HashMap<>();
-        stats.put("userCount", userMapper.selectCount(null));
-        stats.put("authorCount", userMapper.countByRole(1));
-        stats.put("bookCount", bookMapper.selectCount(null));
-        stats.put("adminCount", adminMapper.selectCount(null));
-
-        // 审核统计
-        LambdaQueryWrapper<Book> pendingWrapper = new LambdaQueryWrapper<>();
-        pendingWrapper.eq(Book::getAuditStatus, 1);
-        stats.put("pendingBookCount", bookMapper.selectCount(pendingWrapper));
-
-        // 总收藏数
-        LambdaQueryWrapper<Book> bookWrapper = new LambdaQueryWrapper<>();
-        List<Book> books = bookMapper.selectList(bookWrapper);
-        long totalFavorite = books.stream().mapToLong(Book::getFavoriteCount).sum();
-        stats.put("totalFavoriteCount", totalFavorite);
-
-        // 总访问数
-        long totalVisit = books.stream().mapToLong(Book::getVisitCount).sum();
-        stats.put("totalVisitCount", totalVisit);
-
-        return RestResp.ok(stats);
-    }
-
-    @Override
     public RestResp<Void> resetPassword(Long adminId, String newPassword) {
         Admin admin = adminMapper.selectById(adminId);
         if (admin == null) {
@@ -316,6 +289,7 @@ public class AdminServiceImpl implements AdminService {
                 .authorName(book.getAuthorName())
                 .categoryName(getCategoryName(book.getCategoryId()))
                 .status(book.getStatus())
+                .auditStatus(book.getAuditStatus())
                 .visitCount(book.getVisitCount())
                 .favoriteCount(book.getFavoriteCount())
                 .totalWords(book.getTotalWords())

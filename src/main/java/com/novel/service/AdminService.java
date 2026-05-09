@@ -8,7 +8,6 @@ import com.novel.dto.resp.BookInfoRespDto;
 import com.novel.dto.resp.CategoryRespDto;
 import com.novel.dto.resp.UserInfoRespDto;
 import java.util.List;
-import java.util.Map;
 
 public interface AdminService {
     RestResp<AdminLoginRespDto> adminLogin(String username, String password);
@@ -36,9 +35,6 @@ public interface AdminService {
     RestResp<Void> addCategory(CategoryAddReqDto dto);
     RestResp<Void> updateCategory(Long categoryId, CategoryAddReqDto dto);
     RestResp<Void> deleteCategory(Long categoryId);
-
-    // 统计
-    RestResp<Map<String, Object>> getStatistics();
 
     RestResp<Void> resetPassword(Long adminId, String newPassword);
 }

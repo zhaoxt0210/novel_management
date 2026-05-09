@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>作者审核 - 墨韵书阁后台</title>
+    <title>作品审核 - 墨韵书阁后台</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -227,6 +227,8 @@
             border-radius: 12px;
             width: 600px;
             max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
             overflow: hidden;
         }
 
@@ -237,6 +239,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
         }
 
         .modal-header h3 {
@@ -285,12 +289,44 @@
             outline: none;
         }
 
+        .book-detail {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .book-detail h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .book-detail p {
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        .book-cover-placeholder {
+            width: 150px;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
         .modal-footer {
             padding: 15px 20px;
             border-top: 1px solid #f0f0f0;
             display: flex;
             justify-content: flex-end;
             gap: 10px;
+            position: sticky;
+            bottom: 0;
+            background: white;
         }
 
         .loading {
@@ -357,8 +393,8 @@
                 </div>
                 <div class="nav-links">
                     <a href="/admin/index.html"><i class="fas fa-home"></i> 管理首页</a>
-                    <a href="/admin/author-audit.html" class="active"><i class="fas fa-user-check"></i> 作者审核</a>
-                    <a href="/admin/book-audit.html"><i class="fas fa-book"></i> 作品审核</a>
+                    <a href="/admin/author-audit.html"><i class="fas fa-user-check"></i> 作者审核</a>
+                    <a href="/admin/book-audit.html" class="active"><i class="fas fa-book"></i> 作品审核</a>
                     <a href="/admin/rank.html"><i class="fas fa-trophy"></i> 排行榜管理</a>
                     <a href="/"><i class="fas fa-arrow-left"></i> 返回首页</a>
                 </div>
@@ -368,23 +404,23 @@
 
     <div class="container">
         <h1 class="page-title">
-            <i class="fas fa-user-check"></i> 作者申请审核
+            <i class="fas fa-book"></i> 作品审核
         </h1>
 
         <div class="toolbar">
             <div class="toolbar-left">
-                <select id="statusFilter" onchange="loadAuthorApplies()">
+                <select id="statusFilter" onchange="loadBooks()">
                     <option value="">全部状态</option>
                     <option value="0">待审核</option>
                     <option value="1">已通过</option>
                     <option value="2">已拒绝</option>
                 </select>
-                <button class="btn btn-secondary" onclick="loadAuthorApplies()">
+                <button class="btn btn-secondary" onclick="loadBooks()">
                     <i class="fas fa-redo"></i> 刷新
                 </button>
             </div>
             <div>
-                <span id="applyCount" style="color: #666;">共 0 条申请</span>
+                <span id="bookCount" style="color: #666;">共 0 条记录</span>
             </div>
         </div>
 
@@ -393,21 +429,19 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>用户名</th>
-                        <th>昵称</th>
-                        <th>真实姓名</th>
-                        <th>身份证号</th>
-                        <th>联系电话</th>
-                        <th>申请理由</th>
-                        <th>申请时间</th>
+                        <th>书名</th>
+                        <th>作者</th>
+                        <th>分类</th>
+                        <th>字数</th>
+                        <th>简介</th>
                         <th>状态</th>
                         <th>审核备注</th>
                         <th>操作</th>
                     </tr>
                 </thead>
-                <tbody id="applyTableBody">
+                <tbody id="bookTableBody">
                     <tr>
-                        <td colspan="11">
+                        <td colspan="9">
                             <div class="loading"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>
                         </td>
                     </tr>
@@ -419,10 +453,12 @@
     <div id="auditModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modalTitle">审核申请</h3>
+                <h3 id="modalTitle">审核作品</h3>
                 <span class="close-modal" onclick="closeModal()">&times;</span>
             </div>
             <div class="modal-body">
+                <div class="book-detail" id="bookDetail">
+                </div>
                 <div class="form-group">
                     <label>选择审核结果</label>
                     <select id="auditStatus">
@@ -434,7 +470,7 @@
                     <label>审核备注（选填）</label>
                     <textarea id="auditRemark" placeholder="请输入审核备注..."></textarea>
                 </div>
-                <input type="hidden" id="applyId">
+                <input type="hidden" id="bookId">
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal()">取消</button>
@@ -446,7 +482,7 @@
     <div id="viewModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>申请详情</h3>
+                <h3>作品详情</h3>
                 <span class="close-modal" onclick="closeViewModal()">&times;</span>
             </div>
             <div class="modal-body" id="viewContent">
@@ -460,19 +496,19 @@
     <div id="toast" class="toast"></div>
 
     <script>
-        let applyData = [];
+        let bookData = [];
 
         window.onload = function() {
-            loadAuthorApplies();
+            loadBooks();
         };
 
-        async function loadAuthorApplies() {
+        async function loadBooks() {
             const status = document.getElementById('statusFilter').value;
-            const tbody = document.getElementById('applyTableBody');
-            tbody.innerHTML = '<tr><td colspan="11"><div class="loading"><i class="fas fa-spinner fa-spin"></i> 加载中...</div></td></tr>';
+            const tbody = document.getElementById('bookTableBody');
+            tbody.innerHTML = '<tr><td colspan="9"><div class="loading"><i class="fas fa-spinner fa-spin"></i> 加载中...</div></td></tr>';
             
             try {
-                let url = '/api/admin/author-applies';
+                let url = '/api/admin/books';
                 if (status) {
                     url += `?status=${status}`;
                 }
@@ -481,51 +517,50 @@
                 const data = await response.json();
                 
                 if (data.code === 200) {
-                    applyData = data.data || [];
-                    document.getElementById('applyCount').textContent = `共 ${applyData.length} 条申请`;
-                    renderApplyTable();
+                    bookData = data.data || [];
+                    document.getElementById('bookCount').textContent = `共 ${bookData.length} 条记录`;
+                    renderBookTable();
                 } else {
-                    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state">${data.msg || '加载失败'}</div></td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">${data.msg || '加载失败'}</div></td></tr>`;
                 }
             } catch (error) {
-                console.error('加载申请列表失败:', error);
-                tbody.innerHTML = '<tr><td colspan="11"><div class="empty-state">网络错误</div></td></tr>';
+                console.error('加载作品列表失败:', error);
+                tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state">网络错误</div></td></tr>';
             }
         }
 
-        function renderApplyTable() {
-            const tbody = document.getElementById('applyTableBody');
+        function renderBookTable() {
+            const tbody = document.getElementById('bookTableBody');
             
-            if (applyData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="11"><div class="empty-state">暂无申请记录</div></td></tr>';
+            if (bookData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state">暂无作品记录</div></td></tr>';
                 return;
             }
 
-            const html = applyData.map(apply => {
-                const statusInfo = getStatusInfo(apply.status);
+            const html = bookData.map(book => {
+                const auditStatus = book.auditStatus != null ? book.auditStatus : book.status;
+                const statusInfo = getStatusInfo(auditStatus);
                 
                 return `
                     <tr>
-                        <td>${apply.id}</td>
-                        <td>${apply.username}</td>
-                        <td>${apply.nickname || '-'}</td>
-                        <td>${apply.realName || '-'}</td>
-                        <td>${maskIdCard(apply.idCard)}</td>
-                        <td>${maskPhone(apply.phone)}</td>
-                        <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${apply.reason || ''}">${apply.reason || '-'}</td>
-                        <td>${formatDate(apply.createTime)}</td>
+                        <td>${book.id}</td>
+                        <td>${book.bookName}</td>
+                        <td>${book.authorName}</td>
+                        <td>${book.categoryName}</td>
+                        <td>${book.totalWords || 0}</td>
+                        <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${book.description || ''}">${book.description || '-'}</td>
                         <td><span class="status-badge ${statusInfo.class}">${statusInfo.text}</span></td>
-                        <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${apply.remark || ''}">${apply.remark || '-'}</td>
+                        <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${book.remark || ''}">${book.remark || '-'}</td>
                         <td>
                             <div class="action-btns">
-                                <button class="btn btn-primary btn-sm" onclick="viewApply(${apply.id})">
+                                <button class="btn btn-primary btn-sm" onclick="viewBook(${book.id})">
                                     <i class="fas fa-eye"></i> 查看
                                 </button>
-                                ${apply.status === 0 ? `
-                                    <button class="btn btn-success btn-sm" onclick="showAuditModal(${apply.id}, 1)">
+                                ${auditStatus === 1 ? `
+                                    <button class="btn btn-success btn-sm" onclick="showAuditModal(${book.id}, 2)">
                                         <i class="fas fa-check"></i> 通过
                                     </button>
-                                    <button class="btn btn-danger btn-sm" onclick="showAuditModal(${apply.id}, 2)">
+                                    <button class="btn btn-danger btn-sm" onclick="showAuditModal(${book.id}, 3)">
                                         <i class="fas fa-times"></i> 拒绝
                                     </button>
                                 ` : ''}
@@ -541,59 +576,41 @@
         function getStatusInfo(status) {
             switch (status) {
                 case 0:
-                    return { text: '待审核', class: 'status-pending' };
+                    return { text: '草稿', class: 'status-pending' };
                 case 1:
-                    return { text: '已通过', class: 'status-approved' };
+                    return { text: '待审核', class: 'status-pending' };
                 case 2:
-                    return { text: '已拒绝', class: 'status-rejected' };
+                    return { text: '已通过', class: 'status-approved' };
+                case 3:
+                    return { text: '已驳回', class: 'status-rejected' };
                 default:
                     return { text: '未知', class: 'status-pending' };
             }
         }
 
-        function maskIdCard(idCard) {
-            if (!idCard) return '-';
-            return idCard.replace(/^(.{4})(.+)(.{4})$/, '$1**********$3');
-        }
+        function viewBook(bookId) {
+            const book = bookData.find(b => b.id === bookId);
+            if (!book) return;
 
-        function maskPhone(phone) {
-            if (!phone) return '-';
-            return phone.replace(/^(.{3})(.+)(.{4})$/, '$1****$3');
-        }
-
-        function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            const date = new Date(dateStr);
-            return date.toLocaleString('zh-CN');
-        }
-
-        function viewApply(applyId) {
-            const apply = applyData.find(a => a.id === applyId);
-            if (!apply) return;
+            const auditStatus = book.auditStatus != null ? book.auditStatus : book.status;
 
             const html = `
-                <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0;">
-                    <h4 style="margin-bottom: 10px;">申请信息</h4>
-                    <p><strong>申请ID：</strong>${apply.id}</p>
-                    <p><strong>用户ID：</strong>${apply.userId}</p>
-                    <p><strong>用户名：</strong>${apply.username}</p>
-                    <p><strong>昵称：</strong>${apply.nickname || '-'}</p>
+                <div class="book-detail">
+                    <div class="book-cover-placeholder">📖</div>
+                    <h4>${book.bookName}</h4>
+                    <p><strong>作者：</strong>${book.authorName}</p>
+                    <p><strong>分类：</strong>${book.categoryName}</p>
+                    <p><strong>字数：</strong>${book.totalWords || 0}字</p>
+                    <p><strong>审核状态：</strong><span class="status-badge ${getStatusInfo(auditStatus).class}">${getStatusInfo(auditStatus).text}</span></p>
                 </div>
-                <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0;">
-                    <h4 style="margin-bottom: 10px;">个人信息</h4>
-                    <p><strong>真实姓名：</strong>${apply.realName || '-'}</p>
-                    <p><strong>身份证号：</strong>${apply.idCard || '-'}</p>
-                    <p><strong>联系电话：</strong>${apply.phone || '-'}</p>
+                <div class="book-detail">
+                    <h4>作品简介</h4>
+                    <p style="white-space: pre-wrap;">${book.description || '暂无简介'}</p>
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <h4 style="margin-bottom: 10px;">申请理由</h4>
-                    <p style="white-space: pre-wrap;">${apply.reason || '-'}</p>
-                </div>
-                <div>
-                    <h4 style="margin-bottom: 10px;">审核状态</h4>
-                    <p><strong>状态：</strong><span class="status-badge ${getStatusInfo(apply.status).class}">${getStatusInfo(apply.status).text}</span></p>
-                    <p><strong>审核备注：</strong>${apply.remark || '-'}</p>
-                    <p><strong>申请时间：</strong>${formatDate(apply.createTime)}</p>
+                <div class="book-detail">
+                    <h4>审核信息</h4>
+                    <p><strong>审核备注：</strong>${book.remark || '-'}</p>
+                    <p><strong>创建时间：</strong>${book.createTime ? new Date(book.createTime).toLocaleString('zh-CN') : '-'}</p>
                 </div>
             `;
 
@@ -605,12 +622,23 @@
             document.getElementById('viewModal').style.display = 'none';
         }
 
-        function showAuditModal(applyId, defaultStatus) {
-            document.getElementById('applyId').value = applyId;
+        function showAuditModal(bookId, defaultStatus) {
+            const book = bookData.find(b => b.id === bookId);
+            if (!book) return;
+
+            const detailHtml = `
+                <h4>作品信息</h4>
+                <p><strong>书名：</strong>${book.bookName}</p>
+                <p><strong>作者：</strong>${book.authorName}</p>
+                <p><strong>分类：</strong>${book.categoryName}</p>
+            `;
+            document.getElementById('bookDetail').innerHTML = detailHtml;
+            
+            document.getElementById('bookId').value = bookId;
             document.getElementById('auditStatus').value = defaultStatus;
             document.getElementById('auditRemark').value = '';
             
-            const title = defaultStatus === 1 ? '通过申请' : '拒绝申请';
+            const title = defaultStatus === 2 ? '通过作品' : '拒绝作品';
             document.getElementById('modalTitle').textContent = title;
             
             document.getElementById('auditModal').style.display = 'flex';
@@ -621,21 +649,21 @@
         }
 
         async function submitAudit() {
-            const applyId = document.getElementById('applyId').value;
+            const bookId = document.getElementById('bookId').value;
             const status = document.getElementById('auditStatus').value;
             const remark = document.getElementById('auditRemark').value;
 
             try {
-                const response = await fetch(`/api/admin/author-applies/${applyId}/audit?status=${status}${remark ? `&remark=${encodeURIComponent(remark)}` : ''}`, {
+                const response = await fetch(`/api/admin/books/${bookId}/audit?auditStatus=${status}${remark ? `&remark=${encodeURIComponent(remark)}` : ''}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' }
                 });
                 const data = await response.json();
 
                 if (data.code === 200) {
-                    showToast(status === '1' ? '审核通过成功' : '审核拒绝成功');
+                    showToast(status === '2' ? '审核通过成功' : '审核拒绝成功');
                     closeModal();
-                    loadAuthorApplies();
+                    loadBooks();
                 } else {
                     showToast(data.msg || '审核失败', 'error');
                 }
