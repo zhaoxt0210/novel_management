@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 package com.novel.dto.resp;
 
 import lombok.Builder;
@@ -11,4 +12,19 @@ public class UserLoginRespDto {
     private String username;
     private String nickname;
     private Integer role;
+=======
+package com.novel.dto.resp;
+
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class UserLoginRespDto {
+    private String token;
+    private Long userId;
+    private String username;
+    private String nickname;
+    private Integer role;
+>>>>>>> f761e4fcf7d418a7792e50eeba7078e6fc32c340
 }

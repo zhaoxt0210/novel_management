@@ -181,7 +181,10 @@ create table novel_system.user
 
 
 ALTER TABLE book MODIFY COLUMN cover LONGTEXT;
+<<<<<<< HEAD
 -- 修改 book 表，添加审核相关字段
+=======
+>>>>>>> f761e4fcf7d418a7792e50eeba7078e6fc32c340
 
 -- 修改 book 表，添加审核相关字段
 ALTER TABLE book
@@ -191,6 +194,50 @@ ADD COLUMN submit_time DATETIME COMMENT '提交审核时间',
 ADD COLUMN audit_time DATETIME COMMENT '审核时间',
 MODIFY COLUMN status INT DEFAULT 0 COMMENT '发布状态: 0-连载中,1-已完结,2-已下架';
 
+<<<<<<< HEAD
+=======
+-- 查询所有书的名称和审核状态
+SELECT
+    id AS '书籍ID',
+    book_name AS '书籍名称',
+    audit_status AS '审核状态',
+    CASE audit_status
+        WHEN 0 THEN '草稿'
+        WHEN 1 THEN '待审核'
+        WHEN 2 THEN '已发布'
+        WHEN 3 THEN '已驳回'
+        ELSE '未知'
+    END AS '审核状态说明',
+    status AS '发布状态',
+    CASE status
+        WHEN 0 THEN '连载中'
+        WHEN 1 THEN '已完结'
+        WHEN 2 THEN '已下架'
+        ELSE '未知'
+    END AS '发布状态说明',
+    author_name AS '作者',
+    create_time AS '创建时间'
+FROM book
+ORDER BY
+    CASE audit_status
+        WHEN 1 THEN 1  -- 待审核排在最前面
+        WHEN 0 THEN 2  -- 草稿次之
+        WHEN 3 THEN 3  -- 已驳回
+        WHEN 2 THEN 4  -- 已发布最后
+        ELSE 5
+    END,
+    create_time DESC;
+
+-- 将所有草稿状态(audit_status=0)的书籍改为已发布状态(audit_status=2)
+UPDATE book
+SET
+    audit_status = 2,
+    audit_remark = '批量修改：由草稿改为已发布',
+    audit_time = NOW(),
+    update_time = NOW()
+WHERE audit_status = 0;
+
+>>>>>>> f761e4fcf7d418a7792e50eeba7078e6fc32c340
 
 -- 修改 chapter 表，添加审核状态
 ALTER TABLE chapter

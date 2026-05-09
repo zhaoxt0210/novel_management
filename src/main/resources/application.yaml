@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 spring:
   application:
     name: novel-management-system
@@ -55,4 +56,63 @@ file:
 
 logging:
   level:
+=======
+spring:
+  application:
+    name: novel-management-system
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://82.156.240.2:3306/novel_system?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&connectTimeout=60000&socketTimeout=60000
+    username: novel_root
+    password: novel_123456
+    hikari:
+      connection-timeout: 60000
+      validation-timeout: 60000
+      max-lifetime: 600000
+      idle-timeout: 300000
+      minimum-idle: 2
+      maximum-pool-size: 10
+      connection-test-query: SELECT 1
+      leak-detection-threshold: 60000
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+      file-size-threshold: 2MB
+
+  transaction:
+    default-timeout: 120
+
+server:
+  port: 8080
+  tomcat:
+    connection-timeout: 120000
+    max-http-form-post-size: 10MB
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.novel.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    default-statement-timeout: 120
+  global-config:
+    db-config:
+      id-type: auto
+
+jwt:
+  secret: novelSecretKey12345678901234567890123456789012
+  expiration: 86400000
+
+file:
+  upload:
+    path: ./uploads/
+  access:
+    url: /uploads/
+
+logging:
+  level:
+>>>>>>> f761e4fcf7d418a7792e50eeba7078e6fc32c340
     com.novel: debug

@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - 墨韵书阁</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #fff;
+            padding: 14px 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .title { font-size: 20px; font-weight: 700; }
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .page-wrap { padding: 22px 0 34px; }
+        .profile-card, .setting-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-bottom: 18px;
+        }
+        .profile-top {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .avatar {
+            width: 74px;
+            height: 74px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e74c3c, #f39c12);
+            color: #fff;
+            font-size: 28px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .user-name { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+        .meta { color: #888; font-size: 14px; }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .meta-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .meta-label { color: #888; font-size: 13px; margin-bottom: 4px; }
+        .meta-value { font-weight: 600; }
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .field { margin-bottom: 14px; }
+        .field label {
+            display: block;
+            margin-bottom: 6px;
+            color: #666;
+            font-size: 14px;
+        }
+        .input, .select {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            background: #fff;
+        }
+        .input:focus, .select:focus { border-color: #e74c3c; }
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .btn {
+            border: none;
+            border-radius: 20px;
+            padding: 9px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #e74c3c; color: #fff; }
+        .btn-primary:hover { background: #c0392b; }
+        .btn-ghost { background: #f2f2f2; color: #333; }
+        .tip {
+            margin-top: 12px;
+            color: #777;
+            font-size: 13px;
+            line-height: 1.6;
+            background: #fff6f4;
+            border: 1px solid #f5d3ce;
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+        .status {
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 14px;
+            font-size: 14px;
+        }
+        .status.loading { background: #f3f7ff; color: #3a66b0; }
+        .status.error { background: #fff1f0; color: #cf1322; }
+        .status.success { background: #f6ffed; color: #389e0d; }
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .toggle-row:last-child { border-bottom: none; }
+        .toggle-label { font-size: 14px; color: #555; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 500px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 {
+            font-size: 20px;
+        }
+        .close-modal {
+            font-size: 28px;
+            cursor: pointer;
+            color: white;
+        }
+        .close-modal:hover {
+            opacity: 0.8;
+        }
+        .modal-body {
+            padding: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #e74c3c;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .apply-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: normal;
+        }
+        .apply-status.pending {
+            background: #f39c12;
+            color: white;
+        }
+        .apply-status.approved {
+            background: #27ae60;
+            color: white;
+        }
+        .apply-status.rejected {
+            background: #e74c3c;
+            color: white;
+        }
+        @media (max-width: 768px) {
+            .profile-grid, .form-row { grid-template-columns: 1fr; }
+            .title { font-size: 18px; }
+            .profile-top { align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="container header-content">
+        <div class="title"><i class="fas fa-user-circle"></i> 个人中心</div>
+        <a class="back-btn" href="/index.html"><i class="fas fa-arrow-left"></i> 返回首页</a>
+    </div>
+</header>
+
+<main class="container page-wrap">
+    <div id="globalStatus" class="status loading">正在加载个人信息...</div>
+
+    <section class="profile-card">
+        <div class="profile-top">
+            <div id="avatar" class="avatar">读</div>
+            <div>
+                <div id="displayName" class="user-name">--</div>
+                <div id="accountMeta" class="meta">账号信息加载中</div>
+            </div>
+        </div>
+        <div class="profile-grid">
+            <div class="meta-item">
+                <div class="meta-label">用户ID</div>
+                <div id="metaUserId" class="meta-value">--</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">账号角色</div>
+                <div id="metaRole" class="meta-value">--</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">邮箱</div>
+                <div id="metaEmail" class="meta-value">--</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">昵称</div>
+                <div id="metaNickname" class="meta-value">--</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="setting-card">
+        <div class="section-title"><i class="fas fa-sliders-h"></i> 资料设置</div>
+        <div class="form-row">
+            <div class="field">
+                <label for="nickname">昵称</label>
+                <input id="nickname" class="input" type="text" maxlength="50" placeholder="请输入昵称">
+            </div>
+            <div class="field">
+                <label for="email">邮箱</label>
+                <input id="email" class="input" type="email" maxlength="100" placeholder="请输入邮箱">
+            </div>
+        </div>
+        <div class="btn-row">
+            <button id="saveProfileBtn" class="btn btn-primary" type="button">保存资料</button>
+            <button id="refreshProfileBtn" class="btn btn-ghost" type="button">刷新</button>
+        </div>
+    </section>
+
+    <section class="setting-card">
+        <div class="section-title"><i class="fas fa-shield-alt"></i> 账号安全</div>
+        <div class="form-row">
+            <div class="field">
+                <label for="oldPassword">旧密码</label>
+                <input id="oldPassword" class="input" type="password" placeholder="请输入旧密码">
+            </div>
+            <div class="field">
+                <label for="newPassword">新密码</label>
+                <input id="newPassword" class="input" type="password" placeholder="请输入新密码">
+            </div>
+        </div>
+        <div class="btn-row">
+            <button id="changePasswordBtn" class="btn btn-ghost" type="button">修改密码</button>
+            <button id="applyAuthorBtn" class="btn btn-primary" type="button">申请成为作者</button>
+        </div>
+        <div id="applyStatusContainer" style="margin-top: 15px;"></div>
+    </section>
+
+</main>
+
+<div id="applyModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-feather-alt"></i> 申请成为作者</h3>
+            <span class="close-modal" onclick="closeApplyModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label><i class="fas fa-user"></i> 真实姓名 <span style="color: #e74c3c;">*</span></label>
+                <input type="text" id="applyRealName" placeholder="请输入真实姓名" maxlength="50">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-id-card"></i> 身份证号 <span style="color: #e74c3c;">*</span></label>
+                <input type="text" id="applyIdCard" placeholder="请输入身份证号" maxlength="18">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-phone"></i> 联系电话 <span style="color: #e74c3c;">*</span></label>
+                <input type="tel" id="applyPhone" placeholder="请输入手机号码" maxlength="11">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-pen"></i> 申请理由</label>
+                <textarea id="applyReason" placeholder="请简要介绍您的创作经历和申请理由（选填）" maxlength="500"></textarea>
+            </div>
+            <div class="tip" style="background: #f0f7ff; border-color: #3498db;">
+                <i class="fas fa-info-circle"></i> 提交申请后，管理员将在1-3个工作日内审核，审核结果会通过站内信通知您。
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeApplyModal()">取消</button>
+            <button class="btn btn-primary" onclick="submitAuthorApply()">提交申请</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast" style="position: fixed; top: 20px; right: 20px; background: #27ae60; color: white; padding: 12px 24px; border-radius: 8px; z-index: 2000; display: none; animation: slideIn 0.3s;"></div>
+
+<style>
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #27ae60;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        z-index: 2000;
+        display: none;
+        animation: slideIn 0.3s;
+    }
+    .toast.error {
+        background: #e74c3c;
+    }
+    .toast.info {
+        background: #3498db;
+    }
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+</style>
+
+<script>
+    let currentUserId = null;
+    let currentUserData = null;
+
+    function setGlobalStatus(type, message) {
+        const node = document.getElementById('globalStatus');
+        node.className = 'status ' + type;
+        node.textContent = message;
+    }
+
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = 'toast';
+        if (type === 'error') {
+            toast.classList.add('error');
+        } else if (type === 'info') {
+            toast.classList.add('info');
+        }
+        toast.style.display = 'block';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
+    }
+
+    function getRoleName(role) {
+        if (role === 2) return '管理员';
+        if (role === 1) return '作者';
+        return '普通用户';
+    }
+
+    function getTokenAndUser() {
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('userId');
+        const username = localStorage.getItem('username');
+        if (!token || !userId || !username) {
+            showToast('请先登录', 'error');
+            setTimeout(() => {
+                window.location.href = '/index.html';
+            }, 1500);
+            return null;
+        }
+        return { token, userId, username };
+    }
+
+    function renderProfile(data) {
+        currentUserData = data;
+        const name = data.nickname || data.username || '未知用户';
+        document.getElementById('displayName').textContent = name;
+        document.getElementById('accountMeta').textContent = `账号：${data.username || '--'} | 角色：${getRoleName(data.role)}`;
+        document.getElementById('avatar').textContent = name.charAt(0).toUpperCase();
+
+        document.getElementById('metaUserId').textContent = data.userId || '--';
+        document.getElementById('metaRole').textContent = getRoleName(data.role);
+        document.getElementById('metaEmail').textContent = data.email || '未设置';
+        document.getElementById('metaNickname').textContent = data.nickname || '未设置';
+        document.getElementById('nickname').value = data.nickname || '';
+        document.getElementById('email').value = data.email || '';
+    }
+
+    async function loadUserInfo() {
+        const info = getTokenAndUser();
+        if (!info) return;
+        currentUserId = info.userId;
+
+        setGlobalStatus('loading', '正在加载个人信息...');
+        try {
+            const resp = await fetch(`/api/user/info/${currentUserId}`);
+            const result = await resp.json();
+            if (result.code !== 200 || !result.data) {
+                throw new Error(result.msg || '获取失败');
+            }
+            renderProfile(result.data);
+            setGlobalStatus('success', '个人信息加载完成');
+        } catch (error) {
+            console.error(error);
+            setGlobalStatus('error', '个人信息加载失败，请稍后重试');
+        }
+    }
+
+    async function loadApplyStatus() {
+        if (!currentUserId) return;
+        const container = document.getElementById('applyStatusContainer');
+        try {
+            const resp = await fetch(`/api/user/apply-status/${currentUserId}`);
+            const result = await resp.json();
+            if (result.code === 200 && result.data) {
+                const apply = result.data;
+                let statusHtml = '';
+                let statusClass = '';
+                let statusText = '';
+
+                if (apply.status === 0) {
+                    statusClass = 'pending';
+                    statusText = '待审核';
+                    statusHtml = `<div class="tip" style="background: #fff8e1; border-color: #f39c12;">
+                        <i class="fas fa-clock"></i> <strong>申请状态：<span class="apply-status pending">${statusText}</span></strong><br>
+                        您的申请已提交，管理员正在审核中，请耐心等待。审核结果将通过站内信通知您。
+                    </div>`;
+                } else if (apply.status === 1) {
+                    statusClass = 'approved';
+                    statusText = '已通过';
+                    statusHtml = `<div class="tip" style="background: #e8f8f5; border-color: #27ae60;">
+                        <i class="fas fa-check-circle"></i> <strong>申请状态：<span class="apply-status approved">${statusText}</span></strong><br>
+                        恭喜！您已成为作者，现在可以发布和管理您的作品了。
+                        <div style="margin-top: 10px;">
+                            <button class="btn btn-primary" onclick="window.location.href='/my-works.html'">
+                                <i class="fas fa-feather-alt"></i> 进入作者中心
+                            </button>
+                        </div>
+                    </div>`;
+                } else if (apply.status === 2) {
+                    statusClass = 'rejected';
+                    statusText = '已拒绝';
+                    const remark = apply.remark ? ` 拒绝原因：${apply.remark}` : '';
+                    statusHtml = `<div class="tip" style="background: #fdedec; border-color: #e74c3c;">
+                        <i class="fas fa-times-circle"></i> <strong>申请状态：<span class="apply-status rejected">${statusText}</span></strong><br>
+                        您的申请未通过审核${remark}，您可以重新提交申请。
+                        <div style="margin-top: 10px;">
+                            <button class="btn btn-primary" onclick="showApplyModal()">
+                                <i class="fas fa-redo"></i> 重新申请
+                            </button>
+                        </div>
+                    </div>`;
+                }
+                container.innerHTML = statusHtml;
+            } else {
+                container.innerHTML = `<div class="tip">
+                    <i class="fas fa-info-circle"></i> 您尚未申请成为作者。提交申请后，管理员审核通过即可发布作品。
+                </div>`;
+            }
+        } catch (error) {
+            container.innerHTML = '<div class="tip">无法获取申请状态，请稍后刷新。</div>';
+        }
+    }
+
+    async function saveProfile() {
+        if (!currentUserId) return;
+        const nickname = document.getElementById('nickname').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const query = new URLSearchParams();
+        if (nickname) query.append('nickname', nickname);
+        if (email) query.append('email', email);
+        if (!query.toString()) {
+            showToast('请至少填写一个字段后再保存', 'error');
+            return;
+        }
+
+        const saveBtn = document.getElementById('saveProfileBtn');
+        saveBtn.disabled = true;
+        saveBtn.textContent = '保存中...';
+        try {
+            const resp = await fetch(`/api/user/info/${currentUserId}?${query.toString()}`, { method: 'PUT' });
+            const result = await resp.json();
+            if (result.code !== 200) {
+                throw new Error(result.msg || '保存失败');
+            }
+            showToast('资料保存成功');
+            await loadUserInfo();
+        } catch (error) {
+            showToast(error.message || '保存失败，请稍后重试', 'error');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = '保存资料';
+        }
+    }
+
+    function showApplyModal() {
+        document.getElementById('applyRealName').value = '';
+        document.getElementById('applyIdCard').value = '';
+        document.getElementById('applyPhone').value = '';
+        document.getElementById('applyReason').value = '';
+        document.getElementById('applyModal').style.display = 'flex';
+    }
+
+    function closeApplyModal() {
+        document.getElementById('applyModal').style.display = 'none';
+    }
+
+    async function submitAuthorApply() {
+        const realName = document.getElementById('applyRealName').value.trim();
+        const idCard = document.getElementById('applyIdCard').value.trim();
+        const phone = document.getElementById('applyPhone').value.trim();
+        const reason = document.getElementById('applyReason').value.trim();
+
+        if (!realName) {
+            showToast('请填写真实姓名', 'error');
+            return;
+        }
+        if (!idCard) {
+            showToast('请填写身份证号', 'error');
+            return;
+        }
+        if (idCard.length < 15 || idCard.length > 18) {
+            showToast('请输入有效的身份证号', 'error');
+            return;
+        }
+        if (!phone) {
+            showToast('请填写联系电话', 'error');
+            return;
+        }
+        if (!/^1[3-9]\d{9}$/.test(phone)) {
+            showToast('请输入有效的手机号码', 'error');
+            return;
+        }
+
+        const submitBtn = document.querySelector('#applyModal .modal-footer .btn-primary');
+        submitBtn.disabled = true;
+        submitBtn.textContent = '提交中...';
+
+        try {
+            const resp = await fetch(`/api/user/apply-author/${currentUserId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    realName: realName,
+                    idCard: idCard,
+                    phone: phone,
+                    reason: reason || ''
+                })
+            });
+            const result = await resp.json();
+            if (result.code !== 200) {
+                throw new Error(result.msg || '提交失败');
+            }
+            showToast('申请已提交，请等待管理员审核', 'success');
+            closeApplyModal();
+            await loadApplyStatus();
+        } catch (error) {
+            showToast(error.message || '申请失败，请稍后重试', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '提交申请';
+        }
+    }
+
+    function changePassword() {
+        const oldPwd = document.getElementById('oldPassword').value.trim();
+        const newPwd = document.getElementById('newPassword').value.trim();
+        if (!oldPwd || !newPwd) {
+            showToast('请先填写旧密码和新密码', 'error');
+            return;
+        }
+        if (newPwd.length < 6) {
+            showToast('新密码长度不能少于6位', 'error');
+            return;
+        }
+        showToast('密码修改功能暂未开放，请联系管理员', 'info');
+    }
+
+    window.onload = async function() {
+        await loadUserInfo();
+        await loadApplyStatus();
+
+        document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
+        document.getElementById('refreshProfileBtn').addEventListener('click', loadUserInfo);
+        document.getElementById('applyAuthorBtn').addEventListener('click', showApplyModal);
+        document.getElementById('changePasswordBtn').addEventListener('click', changePassword);
+
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('applyModal');
+            if (event.target === modal) {
+                closeApplyModal();
+            }
+        });
+    };
+</script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 package com.novel.dto.req;
 
 import jakarta.validation.constraints.NotBlank;
@@ -10,4 +11,18 @@ public class UserLoginReqDto {
 
     @NotBlank(message = "密码不能为空")
     private String password;
+=======
+package com.novel.dto.req;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+
+@Data
+public class UserLoginReqDto {
+    @NotBlank(message = "用户名不能为空")
+    private String username;
+
+    @NotBlank(message = "密码不能为空")
+    private String password;
+>>>>>>> f761e4fcf7d418a7792e50eeba7078e6fc32c340
 }

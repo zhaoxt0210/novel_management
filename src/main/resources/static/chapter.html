@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -281,4 +282,289 @@
         }
     </script>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阅读 - 墨韵书阁</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', '宋体', serif;
+            background: #faf9f5;
+            color: #333;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .reading-settings {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .settings-btn {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* 阅读内容 */
+        .reading-content {
+            padding: 40px 0 60px;
+        }
+
+        .chapter-title {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .chapter-content {
+            font-size: 18px;
+            line-height: 1.8;
+            text-indent: 2em;
+            margin-bottom: 40px;
+        }
+
+        .chapter-content p {
+            margin-bottom: 1em;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 12px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            text-align: center;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .nav-btn:hover {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .nav-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 字体大小调整 */
+        .font-small .chapter-content {
+            font-size: 14px;
+        }
+        .font-medium .chapter-content {
+            font-size: 18px;
+        }
+        .font-large .chapter-content {
+            font-size: 22px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 100px;
+            color: #999;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: #999;
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body id="readingBody" class="font-medium">
+    <div class="header">
+        <div class="container">
+            <div class="nav">
+                <a href="/">← 返回首页</a>
+                <div class="reading-settings">
+                    <div class="settings-btn" onclick="changeFontSize('small')">A-</div>
+                    <div class="settings-btn" onclick="changeFontSize('medium')">A</div>
+                    <div class="settings-btn" onclick="changeFontSize('large')">A+</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="reading-content">
+        <div class="container">
+            <div id="chapterContent" class="loading">加载中...</div>
+        </div>
+    </div>
+
+    <footer>
+        <p>墨韵书阁 · 享受阅读的乐趣</p>
+    </footer>
+
+    <script>
+        let bookId = null;
+        let chapterId = null;
+        let currentChapter = null;
+        let token = null;
+        let userId = null;
+        let totalChapters = 0;
+
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            bookId = urlParams.get('bookId');
+            chapterId = urlParams.get('chapterId');
+            
+            token = localStorage.getItem('token');
+            userId = localStorage.getItem('userId');
+            
+            if (chapterId) {
+                loadChapter();
+            }
+        };
+
+        async function loadChapter() {
+            try {
+                let url = `/api/book/chapter/${chapterId}`;
+                if (userId) {
+                    url += `?userId=${userId}`;
+                }
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.code === 200) {
+                    renderChapter(data.data);
+                    currentChapter = data.data;
+                    
+                    if (userId) {
+                        loadTotalChapters();
+                        updateReadProgress();
+                    }
+                } else {
+                    document.getElementById('chapterContent').innerHTML = '<div class="loading">加载失败：' + data.msg + '</div>';
+                }
+            } catch (error) {
+                console.error('加载章节失败:', error);
+                document.getElementById('chapterContent').innerHTML = '<div class="loading">加载失败，请刷新重试</div>';
+            }
+        }
+
+        async function loadTotalChapters() {
+            try {
+                const response = await fetch(`/api/book/${bookId}/chapters`);
+                const data = await response.json();
+                if (data.code === 200 && data.data) {
+                    totalChapters = data.data.length;
+                }
+            } catch (error) {
+                console.error('加载章节总数失败:', error);
+            }
+        }
+
+        async function updateReadProgress() {
+            if (!userId || !currentChapter || totalChapters === 0) return;
+            
+            const progress = Math.round((currentChapter.chapterNum / totalChapters) * 100);
+            
+            try {
+                await fetch('/api/book/bookshelf/progress', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        userId: parseInt(userId),
+                        bookId: parseInt(bookId),
+                        chapterId: parseInt(chapterId),
+                        chapterNum: currentChapter.chapterNum,
+                        chapterName: currentChapter.chapterName,
+                        readProgress: progress
+                    })
+                });
+            } catch (error) {
+                console.error('更新阅读进度失败:', error);
+            }
+        }
+
+        function renderChapter(chapter) {
+            const html = `
+                <h1 class="chapter-title">第${chapter.chapterNum}章 ${chapter.chapterName}</h1>
+                <div class="chapter-content">
+                    ${chapter.content.replace(/\n/g, '<br>')}
+                </div>
+                <div class="navigation">
+                    ${chapter.prevChapterId ? 
+                        `<a href="/chapter.html?bookId=${bookId}&chapterId=${chapter.prevChapterId}" class="nav-btn">← 上一章</a>` : 
+                        `<span class="nav-btn disabled">← 上一章</span>`}
+                    <a href="/book.html?id=${bookId}" class="nav-btn">返回目录</a>
+                    ${chapter.nextChapterId ? 
+                        `<a href="/chapter.html?bookId=${bookId}&chapterId=${chapter.nextChapterId}" class="nav-btn">下一章 →</a>` : 
+                        `<span class="nav-btn disabled">下一章 →</span>`}
+                </div>
+            `;
+            document.getElementById('chapterContent').innerHTML = html;
+            document.title = `${chapter.chapterName} - 墨韵书阁`;
+            
+            // 滚动到顶部
+            window.scrollTo(0, 0);
+        }
+
+        function changeFontSize(size) {
+            const body = document.getElementById('readingBody');
+            body.classList.remove('font-small', 'font-medium', 'font-large');
+            body.classList.add(`font-${size}`);
+        }
+    </script>
+</body>
+>>>>>>> f761e4fcf7d418a7792e50eeba7078e6fc32c340
 </html>

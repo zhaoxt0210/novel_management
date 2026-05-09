@@ -333,6 +333,7 @@
             </div>
             <div class="field">
                 <label for="newPassword">新密码</label>
+<<<<<<< HEAD
                 <input id="newPassword" class="input" type="password" placeholder="请输入新密码（至少6位）">
             </div>
         </div>
@@ -343,6 +344,11 @@
             </div>
             <div class="field"></div>
         </div>
+=======
+                <input id="newPassword" class="input" type="password" placeholder="请输入新密码">
+            </div>
+        </div>
+>>>>>>> f761e4fcf7d418a7792e50eeba7078e6fc32c340
         <div class="btn-row">
             <button id="changePasswordBtn" class="btn btn-ghost" type="button">修改密码</button>
             <button id="applyAuthorBtn" class="btn btn-primary" type="button">申请成为作者</button>
@@ -655,7 +661,11 @@
         }
     }
 
+<<<<<<< HEAD
     async function changePassword() {
+=======
+    function changePassword() {
+>>>>>>> f761e4fcf7d418a7792e50eeba7078e6fc32c340
         const oldPwd = document.getElementById('oldPassword').value.trim();
         const newPwd = document.getElementById('newPassword').value.trim();
         if (!oldPwd || !newPwd) {
@@ -666,6 +676,7 @@
             showToast('新密码长度不能少于6位', 'error');
             return;
         }
+<<<<<<< HEAD
         if (oldPwd === newPwd) {
             showToast('新密码不能与旧密码相同', 'error');
             return;
@@ -703,6 +714,9 @@
             btn.disabled = false;
             btn.textContent = '修改密码';
         }
+=======
+        showToast('密码修改功能暂未开放，请联系管理员', 'info');
+>>>>>>> f761e4fcf7d418a7792e50eeba7078e6fc32c340
     }
 
     window.onload = async function() {
