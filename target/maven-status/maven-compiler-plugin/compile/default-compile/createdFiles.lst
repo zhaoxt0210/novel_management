@@ -23,6 +23,7 @@ com\novel\dto\req\CommentAddReqDto.class
 com\novel\dto\req\RankManageReqDto.class
 com\novel\dto\req\UserRegisterReqDto.class
 com\novel\dto\req\ChapterAddReqDto.class
+com\novel\controller\FileUploadController.class
 com\novel\dto\resp\RankBookRespDto$RankBookRespDtoBuilder.class
 com\novel\service\impl\UserServiceImpl.class
 com\novel\mapper\ReadHistoryMapper.class
