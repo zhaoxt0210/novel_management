@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布作品 - 墨韵书阁</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #fff;
+            padding: 14px 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .title { font-size: 20px; font-weight: 700; }
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .page-wrap { padding: 24px 0 30px; }
+        .form-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .form-label.required::after {
+            content: '*';
+            color: #e74c3c;
+            margin-left: 4px;
+        }
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: #e74c3c;
+        }
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        .form-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 6px;
+        }
+        .form-hint.error { color: #e74c3c; }
+        .form-hint.success { color: #27ae60; }
+        .btn {
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-primary { background: #e74c3c; color: #fff; }
+        .btn-secondary { background: #f2f2f2; color: #333; }
+        .btn-outline {
+            border: 1px solid #e74c3c;
+            background: #fff;
+            color: #e74c3c;
+        }
+        .btn-success {
+            background: #27ae60;
+            color: #fff;
+        }
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 16px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .status {
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status.loading { background: #f3f7ff; color: #3a66b0; }
+        .status.error { background: #fff1f0; color: #cf1322; }
+        .status.success { background: #f6ffed; color: #389e0d; }
+        .status.warning { background: #fff8e1; color: #f39c12; }
+        .status.hidden { display: none; }
+        .chapter-list {
+            margin-top: 12px;
+        }
+        .chapter-item {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 12px;
+            background: #fafafa;
+        }
+        .chapter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .chapter-num {
+            background: #e74c3c;
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .chapter-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .chapter-preview {
+            flex: 1;
+        }
+        .preview-title {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        .preview-content {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .chapter-form {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+        }
+        .chapter-form.active {
+            display: block;
+        }
+        .cover-upload {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .cover-upload:hover {
+            border-color: #e74c3c;
+        }
+        .cover-upload i {
+            font-size: 32px;
+            color: #999;
+            margin-bottom: 10px;
+        }
+        .cover-upload span {
+            color: #666;
+            font-size: 14px;
+        }
+        .cover-preview {
+            max-width: 150px;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-top: 12px;
+            display: none;
+        }
+        .cover-preview.active {
+            display: block;
+        }
+        .category-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .category-tag {
+            padding: 6px 14px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .category-tag:hover {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+        .category-tag.active {
+            background: #e74c3c;
+            color: #fff;
+            border-color: #e74c3c;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        .info-box {
+            background: #e8f4fd;
+            border: 1px solid #bde0fe;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #0066cc;
+        }
+        .info-box i {
+            margin-right: 8px;
+        }
+        @media (max-width: 768px) {
+            .btn-group { flex-direction: column; }
+            .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="container header-content">
+        <div class="title"><i class="fas fa-feather-alt"></i> 发布作品</div>
+        <a class="back-btn" href="/my-works.html"><i class="fas fa-arrow-left"></i> 返回作品中心</a>
+    </div>
+</header>
+
+<main class="container page-wrap">
+    <div id="globalStatus" class="status hidden"></div>
+
+    <div class="info-box">
+        <i class="fas fa-info-circle"></i>
+        <strong>发布流程说明：</strong>
+        1. 您可以先保存草稿，随时继续编辑。<br>
+        2. 作品完善后点击"提交审核"，作品将进入审核状态。<br>
+        3. 管理员审核通过后，作品会自动发布到应用上架。
+    </div>
+
+    <div class="form-card">
+        <div class="card-title">
+            <i class="fas fa-book"></i> 书籍信息
+        </div>
+
+        <div class="form-group">
+            <label class="form-label required">书籍标题</label>
+            <input id="bookName" class="form-input" type="text" placeholder="请输入书名（2-50个字符）">
+            <div id="bookNameHint" class="form-hint">支持中文、英文及数字，长度限制为2-50个字符</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label required">书籍分类</label>
+            <div id="categoryOptions" class="category-options">
+                <div class="empty-state">
+                    <i class="fas fa-folder-open"></i>
+                    <div>加载分类中...</div>
+                </div>
+            </div>
+            <div id="categoryHint" class="form-hint"></div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">书籍简介</label>
+            <textarea id="description" class="form-textarea" placeholder="请输入书籍简介（最多500个字符）"></textarea>
+            <div id="descriptionHint" class="form-hint">最多500个字符</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">封面图片</label>
+            <div id="coverUpload" class="cover-upload">
+                <i class="fas fa-image"></i>
+                <span>点击上传封面图片</span>
+            </div>
+            <input id="coverInput" type="file" accept="image/*" style="display: none;">
+            <img id="coverPreview" class="cover-preview" src="" alt="封面预览">
+            <div id="coverHint" class="form-hint">支持 JPG、PNG 格式，建议尺寸 200x270，不超过2MB</div>
+            <input type="hidden" id="coverUrl" value="">
+        </div>
+    </div>
+
+    <div class="form-card">
+        <div class="card-title">
+            <i class="fas fa-list-alt"></i> 章节管理
+            <button type="button" id="addChapterBtn" class="btn btn-outline btn-sm" style="margin-left: auto;">
+                <i class="fas fa-plus"></i> 添加章节
+            </button>
+        </div>
+
+        <div id="chapterList" class="chapter-list">
+            <div class="empty-state">
+                <i class="fas fa-file-text"></i>
+                <div>暂无章节，请添加章节</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button type="button" id="saveDraftBtn" class="btn btn-secondary">
+            <i class="fas fa-save"></i> 保存草稿
+        </button>
+        <button type="button" id="submitAuditBtn" class="btn btn-success">
+            <i class="fas fa-paper-plane"></i> 提交审核
+        </button>
+    </div>
+</main>
+
+<script>
+    let userId = null;
+    let categories = [];
+    let chapters = [];
+    let chapterIdCounter = 1;
+    let isSubmitting = false;
+
+    function setStatus(type, text, autoHide = true) {
+        const node = document.getElementById('globalStatus');
+        node.className = 'status ' + type;
+        node.textContent = text;
+        node.style.display = 'flex';
+        if (autoHide) {
+            setTimeout(() => {
+                if (node.className === 'status ' + type) {
+                    node.style.display = 'none';
+                }
+            }, 4000);
+        }
+    }
+
+    function getToken() {
+        return localStorage.getItem('token');
+    }
+
+    function ensureLogin() {
+        const token = getToken();
+        const uid = localStorage.getItem('userId');
+        const role = localStorage.getItem('role');
+
+        if (!token || !uid) {
+            alert('请先登录');
+            window.location.href = '/index.html';
+            return false;
+        }
+
+        if (role !== '1') {
+            alert('您还不是作者，请先在个人中心申请成为作者');
+            window.location.href = '/user-center.html';
+            return false;
+        }
+
+        userId = uid;
+        return true;
+    }
+
+    async function loadCategories() {
+        try {
+            const resp = await fetch('/api/category/list');
+            const result = await resp.json();
+            if (result.code === 200 && Array.isArray(result.data)) {
+                categories = result.data;
+                renderCategories();
+            } else {
+                document.getElementById('categoryOptions').innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><div>加载分类失败</div></div>';
+            }
+        } catch (error) {
+            console.error('加载分类失败:', error);
+            document.getElementById('categoryOptions').innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><div>加载分类失败</div></div>';
+        }
+    }
+
+    function renderCategories() {
+        if (!categories.length) {
+            document.getElementById('categoryOptions').innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><div>暂无分类数据</div></div>';
+            return;
+        }
+
+        const html = categories.map(cat => `
+            <div class="category-tag" data-id="${cat.id}" data-name="${cat.name}">
+                ${cat.name}
+            </div>
+        `).join('');
+        document.getElementById('categoryOptions').innerHTML = html;
+
+        document.querySelectorAll('.category-tag').forEach(tag => {
+            tag.addEventListener('click', function() {
+                document.querySelectorAll('.category-tag').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('categoryHint').className = 'form-hint success';
+                document.getElementById('categoryHint').textContent = '已选择：' + this.dataset.name;
+            });
+        });
+    }
+
+    function addChapter(data = null) {
+        const id = data?.id || 'chapter_' + chapterIdCounter++;
+        const chapterNum = chapters.length + 1;
+        const chapterName = data?.chapterName || '';
+        const content = data?.content || '';
+
+        const chapter = { id, chapterNum, chapterName, content };
+        chapters.push(chapter);
+        renderChapterList();
+    }
+
+    function editChapter(id) {
+        const chapter = chapters.find(c => c.id === id);
+        if (!chapter) return;
+
+        const item = document.querySelector(`.chapter-item[data-id="${id}"]`);
+        if (!item) return;
+
+        const previewDiv = item.querySelector('.chapter-preview');
+        const formDiv = item.querySelector('.chapter-form');
+
+        if (previewDiv) previewDiv.style.display = 'none';
+        if (formDiv) formDiv.classList.add('active');
+
+        const nameInput = formDiv?.querySelector('.edit-chapter-name');
+        const contentTextarea = formDiv?.querySelector('.edit-content');
+
+        if (nameInput) nameInput.value = chapter.chapterName;
+        if (contentTextarea) contentTextarea.value = chapter.content;
+    }
+
+    function saveChapter(id) {
+        const item = document.querySelector(`.chapter-item[data-id="${id}"]`);
+        if (!item) return;
+
+        const chapter = chapters.find(c => c.id === id);
+        if (!chapter) return;
+
+        const chapterName = item.querySelector('.edit-chapter-name')?.value.trim() || '';
+        const content = item.querySelector('.edit-content')?.value.trim() || '';
+
+        if (!chapterName) {
+            alert('请输入章节标题');
+            return;
+        }
+        if (chapterName.length < 2 || chapterName.length > 30) {
+            alert('章节标题长度必须在2-30个字符之间');
+            return;
+        }
+        if (!content) {
+            alert('请输入章节内容');
+            return;
+        }
+        if (content.length < 20) {
+            alert('章节内容至少需要20个字符');
+            return;
+        }
+
+        chapter.chapterName = chapterName;
+        chapter.content = content;
+
+        const previewDiv = item.querySelector('.chapter-preview');
+        const formDiv = item.querySelector('.chapter-form');
+
+        if (previewDiv) previewDiv.style.display = 'block';
+        if (formDiv) formDiv.classList.remove('active');
+
+        const previewTitle = item.querySelector('.preview-title');
+        if (previewTitle) previewTitle.textContent = chapterName;
+
+        const previewContent = item.querySelector('.preview-content');
+        if (previewContent) {
+            const contentPreview = content.length > 100 ? content.substring(0, 100) + '...' : content;
+            previewContent.textContent = contentPreview;
+        }
+    }
+
+    function cancelEdit(id) {
+        const item = document.querySelector(`.chapter-item[data-id="${id}"]`);
+        if (!item) return;
+
+        const previewDiv = item.querySelector('.chapter-preview');
+        const formDiv = item.querySelector('.chapter-form');
+
+        if (previewDiv) previewDiv.style.display = 'block';
+        if (formDiv) formDiv.classList.remove('active');
+    }
+
+    function deleteChapter(id) {
+        if (!confirm('确认删除该章节吗？')) return;
+
+        const index = chapters.findIndex(c => c.id === id);
+        if (index > -1) {
+            chapters.splice(index, 1);
+            chapters.forEach((c, i) => c.chapterNum = i + 1);
+            renderChapterList();
+        }
+    }
+
+    function renderChapterList() {
+        const container = document.getElementById('chapterList');
+
+        if (chapters.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-file-text"></i>
+                    <div>暂无章节，请添加章节</div>
+                </div>
+            `;
+            return;
+        }
+
+        const html = chapters.map(chapter => {
+            const contentPreview = chapter.content && chapter.content.length > 100
+                ? chapter.content.substring(0, 100) + '...'
+                : (chapter.content || '暂无内容');
+
+            return `
+                <div class="chapter-item" data-id="${chapter.id}">
+                    <div class="chapter-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span class="chapter-num">${chapter.chapterNum}</span>
+                            <span class="preview-title" style="font-weight: 500;">${escapeHtml(chapter.chapterName || '未命名章节')}</span>
+                        </div>
+                        <div class="chapter-actions">
+                            <button class="btn btn-outline btn-sm" onclick="editChapter('${chapter.id}')">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="deleteChapter('${chapter.id}')">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chapter-preview">
+                        <div class="preview-content">${escapeHtml(contentPreview)}</div>
+                    </div>
+                    <div class="chapter-form">
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <input class="form-input edit-chapter-name" type="text" placeholder="章节标题（2-30个字符）" value="${escapeHtml(chapter.chapterName)}">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <textarea class="form-textarea edit-content" rows="6" placeholder="章节内容（至少20个字符）">${escapeHtml(chapter.content)}</textarea>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-primary btn-sm" onclick="saveChapter('${chapter.id}')">保存</button>
+                            <button class="btn btn-secondary btn-sm" onclick="cancelEdit('${chapter.id}')">取消</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = html;
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function validateForm() {
+        const errors = [];
+
+        const bookName = document.getElementById('bookName').value.trim();
+        if (!bookName) {
+            errors.push('请输入书籍标题');
+        } else if (bookName.length < 2 || bookName.length > 50) {
+            errors.push('书籍标题长度必须在2-50个字符之间');
+        }
+
+        const activeCategory = document.querySelector('.category-tag.active');
+        if (!activeCategory) {
+            errors.push('请选择书籍分类');
+        }
+
+        if (chapters.length === 0) {
+            errors.push('请至少添加一个章节');
+        }
+
+        for (let i = 0; i < chapters.length; i++) {
+            const chapter = chapters[i];
+            if (!chapter.chapterName || !chapter.chapterName.trim()) {
+                errors.push(`第${i + 1}章：请输入章节标题`);
+            } else if (chapter.chapterName.length < 2 || chapter.chapterName.length > 30) {
+                errors.push(`第${i + 1}章：章节标题长度必须在2-30个字符之间`);
+            }
+            if (!chapter.content || !chapter.content.trim()) {
+                errors.push(`第${i + 1}章：请输入章节内容`);
+            } else if (chapter.content.length < 20) {
+                errors.push(`第${i + 1}章：章节内容至少需要20个字符`);
+            }
+        }
+
+        return errors;
+    }
+
+    function getBookData() {
+        const bookName = document.getElementById('bookName').value.trim();
+        const activeCategory = document.querySelector('.category-tag.active');
+        const categoryId = activeCategory ? parseInt(activeCategory.dataset.id) : null;
+        const description = document.getElementById('description').value.trim();
+        const cover = document.getElementById('coverUrl').value;
+
+        const chapterItems = chapters.map(c => ({
+            chapterName: c.chapterName,
+            content: c.content
+        }));
+
+        return {
+            bookName,
+            categoryId,
+            description,
+            cover,
+            publishStatus: 0,
+            chapters: chapterItems
+        };
+    }
+
+    async function saveDraft() {
+        const errors = validateForm();
+        if (errors.length > 0) {
+            alert(errors.join('\n'));
+            return;
+        }
+
+        if (isSubmitting) return;
+        isSubmitting = true;
+        setStatus('loading', '正在保存草稿...', false);
+
+        try {
+            const bookData = getBookData();
+            const data = { ...bookData, auditStatus: 0 };
+
+            const token = getToken();
+            const response = await fetch(`/api/author/${userId}/book/draft`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.code === 200) {
+                setStatus('success', `草稿保存成功！作品《${result.data.bookName}》已保存，可继续完善后提交审核`);
+                setTimeout(() => {
+                    window.location.href = `/my-works.html`;
+                }, 2000);
+            } else {
+                setStatus('error', result.msg || '保存失败');
+            }
+        } catch (error) {
+            console.error('保存草稿失败:', error);
+            setStatus('error', '保存失败，请稍后重试：' + error.message);
+        } finally {
+            isSubmitting = false;
+        }
+    }
+
+    async function submitForAudit() {
+        const errors = validateForm();
+        if (errors.length > 0) {
+            alert(errors.join('\n'));
+            return;
+        }
+
+        if (!confirm('提交审核后，作品将进入审核流程，审核期间无法修改。确认提交吗？')) {
+            return;
+        }
+
+        if (isSubmitting) return;
+        isSubmitting = true;
+        setStatus('loading', '正在提交审核...', false);
+
+        try {
+            const bookData = getBookData();
+            const data = { ...bookData, auditStatus: 1 };
+
+            const token = getToken();
+            const response = await fetch(`/api/author/${userId}/book/submit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.code === 200) {
+                setStatus('success', `提交成功！作品《${result.data.bookName}》已提交审核，请耐心等待管理员审核。`, false);
+                setTimeout(() => {
+                    window.location.href = `/my-works.html`;
+                }, 3000);
+            } else {
+                setStatus('error', result.msg || '提交失败');
+            }
+        } catch (error) {
+            console.error('提交审核失败:', error);
+            setStatus('error', '提交失败，请稍后重试：' + error.message);
+        } finally {
+            isSubmitting = false;
+        }
+    }
+
+    async function uploadCover(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('/api/upload/cover', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+
+            if (result.code === 200 && result.data && result.data.url) {
+                document.getElementById('coverUrl').value = result.data.url;
+                return true;
+            } else {
+                setStatus('error', result.msg || '上传失败');
+                return false;
+            }
+        } catch (error) {
+            console.error('上传失败:', error);
+            setStatus('error', '上传失败，请稍后重试');
+            return false;
+        }
+    }
+
+    window.onload = function() {
+        if (!ensureLogin()) return;
+
+        document.getElementById('addChapterBtn').addEventListener('click', () => addChapter());
+        document.getElementById('saveDraftBtn').addEventListener('click', saveDraft);
+        document.getElementById('submitAuditBtn').addEventListener('click', submitForAudit);
+
+        const coverUpload = document.getElementById('coverUpload');
+        const coverInput = document.getElementById('coverInput');
+        const coverPreview = document.getElementById('coverPreview');
+
+        coverUpload.addEventListener('click', () => {
+            coverInput.click();
+        });
+
+        coverInput.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                alert('请选择图片文件');
+                return;
+            }
+            if (file.size > 2 * 1024 * 1024) {
+                alert('图片大小不能超过2MB');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                coverPreview.src = event.target.result;
+                coverPreview.classList.add('active');
+            };
+            reader.readAsDataURL(file);
+
+            const success = await uploadCover(file);
+            if (!success) {
+                coverPreview.classList.remove('active');
+            }
+        });
+
+        document.getElementById('bookName').addEventListener('blur', function() {
+            const value = this.value.trim();
+            const hint = document.getElementById('bookNameHint');
+            if (!value) {
+                hint.className = 'form-hint error';
+                hint.textContent = '请输入书籍标题';
+            } else if (value.length < 2 || value.length > 50) {
+                hint.className = 'form-hint error';
+                hint.textContent = '标题长度必须在2-50个字符之间';
+            } else {
+                hint.className = 'form-hint success';
+                hint.textContent = '✓ 标题格式正确';
+            }
+        });
+
+        loadCategories();
+        addChapter();
+    };
+</script>
+</body>
+</html>
