@@ -43,12 +43,10 @@ mybatis-plus:
     db-config:
       id-type: auto
 
-# JWT配置 - 必须添加
 jwt:
   secret: novelSecretKey12345678901234567890123456789012
   expiration: 86400000
 
-# 文件上传路径配置
 file:
   upload:
     path: ./uploads/

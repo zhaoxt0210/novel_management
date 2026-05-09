@@ -37,14 +37,12 @@ public class AuthorController {
         return authorService.submitForAudit(authorId, dto);
     }
 
-    // 新增：草稿作品提交审核
     @Operation(summary = "草稿作品提交审核")
     @PostMapping("/{authorId}/book/{bookId}/submit-audit")
     public RestResp<Void> submitDraftForAudit(@PathVariable Long authorId, @PathVariable Long bookId) {
         return authorService.submitDraftForAudit(authorId, bookId);
     }
 
-    // 新增：被驳回作品再次提交审核
     @Operation(summary = "被驳回作品再次提交审核")
     @PostMapping("/{authorId}/book/{bookId}/resubmit-audit")
     public RestResp<Void> resubmitForAudit(@PathVariable Long authorId, @PathVariable Long bookId) {
