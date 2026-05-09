@@ -413,7 +413,7 @@
             const tabsHtml = '<div class="tab" data-id="" onclick="filterByCategory(\'\')">热门推荐</div>' +
                 categories.map(cat => `<div class="tab" data-id="${cat.id}" onclick="filterByCategory(${cat.id})">${cat.name}</div>`).join('');
             document.getElementById('categoryTabs').innerHTML = tabsHtml;
-
+            
             if (currentCategoryId) {
                 document.querySelectorAll('.tab').forEach(tab => {
                     if (parseInt(tab.dataset.id) === currentCategoryId) {
@@ -435,56 +435,28 @@
             }
         }
 
-    async function loadBooks() {
-        const listEl = document.getElementById('booksList');
-        listEl.innerHTML = '<div class="loading">加载中...</div>';
-
-        try {
-            let url;
-
-            // 热门推荐板块（没有选择具体分类）
-            if (!currentCategoryId) {
-                // 根据排序类型调用不同的推荐接口
-                if (currentSort === 'update_time') {
-                    // 最新推荐：按更新时间最新，且热度>10000
-                    url = `/api/book/rank/latest?limit=${pageSize}`;
-                } else if (currentSort === 'visit_count') {
-                    // 最热推荐：按热度（阅读量+收藏量）最高
-                    url = `/api/book/rank/hottest?limit=${pageSize}`;
-                } else if (currentSort === 'favorite_count') {
-                    // 收藏推荐：按收藏量最多
-                    url = `/api/book/rank/favorite?limit=${pageSize}`;
+        async function loadBooks() {
+            const listEl = document.getElementById('booksList');
+            listEl.innerHTML = '<div class="loading">加载中...</div>';
+            
+            try {
+                let url;
+                if (!currentCategoryId) {
+                    url = `/api/book/home?pageNum=1&pageSize=3`;
                 } else {
-                    // 默认使用最热推荐
-                    url = `/api/book/rank/hottest?limit=${pageSize}`;
+                    url = `/api/book/category/${currentCategoryId}?pageNum=${currentPage}&pageSize=${pageSize}&sortBy=${currentSort}`;
                 }
-
+                
                 const response = await fetch(url);
                 const data = await response.json();
-
-                if (data.code === 200) {
-                    const books = data.data || [];
-                    renderBooks(books);
-                    // 热门推荐没有分页，隐藏分页控件
-                    document.getElementById('pagination').innerHTML = '';
-                    totalPages = 1;
-                } else {
-                    listEl.innerHTML = '<div class="empty-state"><div class="empty-title">' + (data.msg || '加载失败') + '</div></div>';
-                }
-            } else {
-                // 具体分类查询：按分类ID和排序方式查询
-                url = `/api/book/category/${currentCategoryId}?pageNum=${currentPage}&pageSize=${pageSize}&sortBy=${currentSort}`;
-
-                const response = await fetch(url);
-                const data = await response.json();
-
+                
                 if (data.code === 200) {
                     let books = data.data;
-                    // 处理分页数据
                     if (data.data && data.data.list) {
                         books = data.data.list;
                         totalPages = Math.ceil(data.data.total / pageSize) || 1;
-                    } else {
+                    } else if (!currentCategoryId) {
+                        books = data.data ? data.data.slice(0, 3) : [];
                         totalPages = 1;
                     }
                     allBooks = books;
@@ -493,16 +465,15 @@
                 } else {
                     listEl.innerHTML = '<div class="empty-state"><div class="empty-title">' + (data.msg || '加载失败') + '</div></div>';
                 }
+            } catch (error) {
+                console.error('加载失败:', error);
+                listEl.innerHTML = '<div class="empty-state"><div class="empty-title">加载失败，请刷新重试</div></div>';
             }
-        } catch (error) {
-            console.error('加载失败:', error);
-            listEl.innerHTML = '<div class="empty-state"><div class="empty-title">加载失败，请刷新重试</div></div>';
         }
-    }
 
         function renderBooks(books) {
             const listEl = document.getElementById('booksList');
-
+            
             if (!books || books.length === 0) {
                 listEl.innerHTML = `
                     <div class="empty-state" style="grid-column: 1/-1;">
@@ -543,7 +514,7 @@
             }
 
             let html = `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>`;
-
+            
             for (let i = 1; i <= totalPages; i++) {
                 if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
                     html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
@@ -551,9 +522,9 @@
                     html += `<span>...</span>`;
                 }
             }
-
+            
             html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>下一页</button>`;
-
+            
             pagination.innerHTML = html;
         }
 
@@ -567,15 +538,15 @@
         function filterByCategory(categoryId) {
             currentCategoryId = categoryId || null;
             currentPage = 1;
-
+            
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
-                if ((!categoryId && tab.dataset.id === '') ||
+                if ((!categoryId && tab.dataset.id === '') || 
                     (categoryId && parseInt(tab.dataset.id) === categoryId)) {
                     tab.classList.add('active');
                 }
             });
-
+            
             updateCategoryTitle();
             loadBooks();
         }
@@ -583,14 +554,14 @@
         function changeSort(sort) {
             currentSort = sort;
             currentPage = 1;
-
+            
             document.querySelectorAll('.sort-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.dataset.sort === sort) {
                     btn.classList.add('active');
                 }
             });
-
+            
             loadBooks();
         }
 

@@ -47,17 +47,6 @@ public interface BookService {
     // 作家功能 - 获取作者的所有小说
     RestResp<List<BookInfoRespDto>> getAuthorBooks(Long authorId);
 
-    // 收藏时自动加入书架
+    // ========== 新增：收藏时自动加入书架 ==========
     RestResp<Void> addFavoriteWithBookshelf(Long userId, Long bookId);
-
-    // ========== 新增推荐方法 ==========
-
-    // 获取最新推荐（热度>10000且时间最新）
-    RestResp<List<BookInfoRespDto>> getLatestRecommend(Integer limit);
-
-    // 获取最热推荐（热度最高）
-    RestResp<List<BookInfoRespDto>> getHottestRecommend(Integer limit);
-
-    // 获取收藏推荐（收藏最多）
-    RestResp<List<BookInfoRespDto>> getMostFavoritedRecommend(Integer limit);
 }

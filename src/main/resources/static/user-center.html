@@ -333,8 +333,15 @@
             </div>
             <div class="field">
                 <label for="newPassword">新密码</label>
-                <input id="newPassword" class="input" type="password" placeholder="请输入新密码">
+                <input id="newPassword" class="input" type="password" placeholder="请输入新密码（至少6位）">
             </div>
+        </div>
+        <div class="form-row" style="margin-top: -6px;">
+            <div class="field">
+                <label for="confirmPassword">确认新密码</label>
+                <input id="confirmPassword" class="input" type="password" placeholder="请再次输入新密码">
+            </div>
+            <div class="field"></div>
         </div>
         <div class="btn-row">
             <button id="changePasswordBtn" class="btn btn-ghost" type="button">修改密码</button>
@@ -648,7 +655,7 @@
         }
     }
 
-    function changePassword() {
+    async function changePassword() {
         const oldPwd = document.getElementById('oldPassword').value.trim();
         const newPwd = document.getElementById('newPassword').value.trim();
         if (!oldPwd || !newPwd) {
@@ -659,7 +666,43 @@
             showToast('新密码长度不能少于6位', 'error');
             return;
         }
-        showToast('密码修改功能暂未开放，请联系管理员', 'info');
+        if (oldPwd === newPwd) {
+            showToast('新密码不能与旧密码相同', 'error');
+            return;
+        }
+
+        const confirmPwd = document.getElementById('confirmPassword').value.trim();
+        if (newPwd !== confirmPwd) {
+            showToast('两次输入的新密码不一致', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('changePasswordBtn');
+        btn.disabled = true;
+        btn.textContent = '修改中...';
+
+        try {
+            const resp = await fetch(`/api/user/change-password/${currentUserId}?oldPassword=${encodeURIComponent(oldPwd)}&newPassword=${encodeURIComponent(newPwd)}`, {
+                method: 'PUT'
+            });
+            const result = await resp.json();
+            if (result.code === 200) {
+                showToast('密码修改成功，请重新登录');
+                document.getElementById('oldPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                setTimeout(() => {
+                    localStorage.clear();
+                    window.location.href = '/index.html';
+                }, 1500);
+            } else {
+                showToast(result.msg || '修改失败', 'error');
+            }
+        } catch (error) {
+            showToast('修改失败，请稍后重试', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '修改密码';
+        }
     }
 
     window.onload = async function() {

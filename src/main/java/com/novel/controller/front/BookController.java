@@ -54,7 +54,7 @@ public class BookController {
     @Operation(summary = "获取章节内容")
     @GetMapping("/chapter/{chapterId}")
     public RestResp<ChapterRespDto> getChapter(@PathVariable Long chapterId,
-                                               @RequestParam(required = false) Long userId) {
+                                                @RequestParam(required = false) Long userId) {
         return bookService.getChapter(chapterId, userId);
     }
 
@@ -67,9 +67,9 @@ public class BookController {
     @Operation(summary = "按分类获取小说")
     @GetMapping("/category/{categoryId}")
     public RestResp<List<BookInfoRespDto>> listBooksByCategory(@PathVariable Long categoryId,
-                                                               @RequestParam(defaultValue = "update_time") String sortBy,
-                                                               @RequestParam(defaultValue = "1") Integer pageNum,
-                                                               @RequestParam(defaultValue = "20") Integer pageSize) {
+                                                                @RequestParam(defaultValue = "update_time") String sortBy,
+                                                                @RequestParam(defaultValue = "1") Integer pageNum,
+                                                                @RequestParam(defaultValue = "20") Integer pageSize) {
         return bookService.listBooksByCategory(categoryId, sortBy, pageNum, pageSize);
     }
 
@@ -100,7 +100,7 @@ public class BookController {
     @Operation(summary = "获取用户书架")
     @GetMapping("/bookshelf/{userId}")
     public RestResp<List<BookshelfRespDto>> getUserBookshelf(@PathVariable Long userId,
-                                                             @RequestParam(defaultValue = "create_time") String sortBy) {
+                                                               @RequestParam(defaultValue = "create_time") String sortBy) {
         return bookService.getUserBookshelf(userId, sortBy);
     }
 
@@ -125,28 +125,15 @@ public class BookController {
     @Operation(summary = "获取小说评论列表")
     @GetMapping("/comment/{bookId}")
     public RestResp<List<CommentRespDto>> getComments(@PathVariable Long bookId,
-                                                      @RequestParam(defaultValue = "1") Integer pageNum,
-                                                      @RequestParam(defaultValue = "20") Integer pageSize) {
+                                                       @RequestParam(defaultValue = "1") Integer pageNum,
+                                                       @RequestParam(defaultValue = "20") Integer pageSize) {
         return bookService.getComments(bookId, pageNum, pageSize);
     }
 
-    @Operation(summary = "获取排行榜/推荐榜")
+    @Operation(summary = "获取排行榜")
     @GetMapping("/rank/{type}")
     public RestResp<List<BookInfoRespDto>> getRanking(@PathVariable String type,
-                                                      @RequestParam(defaultValue = "10") Integer limit) {
-        // 根据 type 调用不同的服务方法
-        if ("latest".equalsIgnoreCase(type)) {
-            // 最新推荐：热度>10000且时间最新
-            return bookService.getLatestRecommend(limit);
-        } else if ("hottest".equalsIgnoreCase(type)) {
-            // 最热推荐：热度最高
-            return bookService.getHottestRecommend(limit);
-        } else if ("favorite".equalsIgnoreCase(type)) {
-            // 收藏推荐：收藏最多
-            return bookService.getMostFavoritedRecommend(limit);
-        } else {
-            // 兼容旧的接口调用
-            return bookService.getRanking(type, limit);
-        }
+                                                       @RequestParam(defaultValue = "10") Integer limit) {
+        return bookService.getRanking(type, limit);
     }
 }

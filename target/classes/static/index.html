@@ -798,62 +798,15 @@
 
     async function loadBooks(type = 'home') {
         try {
+            let url = '/api/book/home';
             if (currentCategory) {
-                // 选择了具体分类时，按分类查询
-                let url = `/api/book/category/${currentCategory}?pageNum=1&pageSize=3`;
-                const response = await fetch(url);
-                const data = await response.json();
-                if (data.code === 200) {
-                    const books = Array.isArray(data.data) ? data.data : (data.data && data.data.list ? data.data.list : []);
-                    renderBooks(books);
-                }
-            } else {
-                // 热门推荐板块：分别获取"最新""最热""收藏"的前2名（用于去重递补）
-                const [latestRes, hottestRes, favoriteRes] = await Promise.all([
-                    fetch('/api/book/rank/latest?limit=2'),
-                    fetch('/api/book/rank/hottest?limit=2'),
-                    fetch('/api/book/rank/favorite?limit=2')
-                ]);
-
-                const latestData = await latestRes.json();
-                const hottestData = await hottestRes.json();
-                const favoriteData = await favoriteRes.json();
-
-                // 提取各榜单数据
-                const latestList = (latestData.code === 200 && latestData.data) ? latestData.data : [];
-                const hottestList = (hottestData.code === 200 && hottestData.data) ? hottestData.data : [];
-                const favoriteList = (favoriteData.code === 200 && favoriteData.data) ? favoriteData.data : [];
-
-                const books = [];
-                const usedBookIds = new Set();
-
-                // 优先级：最新 > 最热 > 收藏
-                // 处理"最新"榜单
-                if (latestList.length > 0) {
-                    const book = latestList[0];
-                    books.push({ ...book, _tag: '最新' });
-                    usedBookIds.add(book.id);
-                }
-
-                // 处理"最热"榜单（去重，如重复则取下一个）
-                for (const book of hottestList) {
-                    if (!usedBookIds.has(book.id)) {
-                        books.push({ ...book, _tag: '最热' });
-                        usedBookIds.add(book.id);
-                        break;
-                    }
-                }
-
-                // 处理"收藏"榜单（去重，如重复则取下一个）
-                for (const book of favoriteList) {
-                    if (!usedBookIds.has(book.id)) {
-                        books.push({ ...book, _tag: '收藏' });
-                        usedBookIds.add(book.id);
-                        break;
-                    }
-                }
-
-                renderBooks(books);
+                url = `/api/book/category/${currentCategory}?pageNum=1&pageSize=3`;
+            }
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.code === 200) {
+                const books = Array.isArray(data.data) ? data.data : (data.data && data.data.list ? data.data.list : []);
+                renderBooks(currentCategory ? books : books.slice(0, 3));
             }
         } catch (error) {
             console.error('加载失败:', error);
@@ -961,7 +914,6 @@
                 <div class="book-cover">
                     📖
                     <div class="book-status">${book.status === 0 ? '连载中' : '已完结'}</div>
-                    ${book._tag ? '<div style="position:absolute;top:10px;left:10px;padding:4px 12px;background:#e74c3c;border-radius:20px;font-size:12px;color:white;">' + book._tag + '</div>' : ''}
                 </div>
                 <div class="book-info">
                     <div class="book-title">${escapeHtml(book.bookName)}</div>
