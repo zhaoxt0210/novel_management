@@ -289,16 +289,45 @@ public class AuthorServiceImpl implements AuthorService {
             if (book == null || !book.getAuthorId().equals(authorId)) {
                 return RestResp.error("无权操作此小说");
             }
-            if (book.getAuditStatus() == null || book.getAuditStatus() != 2) {
-                return RestResp.error("作品尚未审核通过，无法添加章节");
+
+            // 修改这里：放宽添加章节的权限
+            // 允许添加章节的状态：草稿(0)、已驳回(3)、已发布且未完结(2且status=0)
+            boolean canAddChapter = false;
+
+            if (book.getAuditStatus() == null) {
+                return RestResp.error("作品状态异常");
             }
 
+            // 草稿状态可以添加
+            if (book.getAuditStatus() == 0) {
+                canAddChapter = true;
+            }
+            // 已驳回状态可以添加
+            else if (book.getAuditStatus() == 3) {
+                canAddChapter = true;
+            }
+            // 已发布且未完结状态可以添加
+            else if (book.getAuditStatus() == 2 && book.getStatus() == 0) {
+                canAddChapter = true;
+            }
+
+            if (!canAddChapter) {
+                return RestResp.error("当前状态无法添加章节。只有草稿、已驳回或已发布未完结的作品可以添加章节。");
+            }
+
+            // 获取最大章节号
             LambdaQueryWrapper<Chapter> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(Chapter::getBookId, dto.getBookId());
             wrapper.orderByDesc(Chapter::getChapterNum);
             wrapper.last("limit 1");
             Chapter lastChapter = chapterMapper.selectOne(wrapper);
             int nextChapterNum = lastChapter == null ? 1 : lastChapter.getChapterNum() + 1;
+
+            // 新章节的审核状态：如果作品是已发布状态，新章节直接设为已发布；否则设为作品相同的审核状态
+            int newChapterAuditStatus = book.getAuditStatus();
+            if (book.getAuditStatus() == 2) {
+                newChapterAuditStatus = 2; // 已发布的作品，新章节直接发布
+            }
 
             Chapter chapter = new Chapter();
             chapter.setBookId(dto.getBookId());
@@ -307,15 +336,23 @@ public class AuthorServiceImpl implements AuthorService {
             chapter.setContent(dto.getContent());
             chapter.setWordCount(dto.getContent().length());
             chapter.setStatus(1);
-            chapter.setAuditStatus(2);
+            chapter.setAuditStatus(newChapterAuditStatus);
             chapter.setCreateTime(LocalDateTime.now());
             chapter.setUpdateTime(LocalDateTime.now());
             chapterMapper.insert(chapter);
 
+            // 更新书籍信息
             book.setLastChapterId(chapter.getId());
             book.setLastChapterName(chapter.getChapterName());
             book.setTotalWords(book.getTotalWords() + chapter.getWordCount());
             book.setUpdateTime(LocalDateTime.now());
+
+            // 如果是已驳回状态添加了章节，建议将作品状态重置为草稿，方便重新提交
+            if (book.getAuditStatus() == 3) {
+                book.setAuditStatus(0); // 改为草稿状态
+                book.setAuditRemark(null);
+            }
+
             bookMapper.updateById(book);
             return RestResp.ok();
         } catch (Exception e) {
@@ -323,7 +360,6 @@ public class AuthorServiceImpl implements AuthorService {
             return RestResp.error("添加章节失败：" + e.getMessage());
         }
     }
-
     @Override
     @Transactional(timeout = 30)
     public RestResp<Void> updateChapter(Long authorId, ChapterUpdateReqDto dto) {
@@ -336,7 +372,18 @@ public class AuthorServiceImpl implements AuthorService {
             if (book == null || !book.getAuthorId().equals(authorId)) {
                 return RestResp.error("无权操作此章节");
             }
-            boolean canEdit = (book.getAuditStatus() == 0) || (book.getAuditStatus() == 2 && book.getStatus() == 0);
+
+            // 修改这里：放宽修改章节的权限
+            boolean canEdit = false;
+
+            if (book.getAuditStatus() == 0) {  // 草稿
+                canEdit = true;
+            } else if (book.getAuditStatus() == 3) {  // 已驳回
+                canEdit = true;
+            } else if (book.getAuditStatus() == 2 && book.getStatus() == 0) {  // 已发布且未完结
+                canEdit = true;
+            }
+
             if (!canEdit) {
                 return RestResp.error("当前状态无法修改章节");
             }
@@ -357,7 +404,6 @@ public class AuthorServiceImpl implements AuthorService {
             return RestResp.error("更新章节失败：" + e.getMessage());
         }
     }
-
     @Override
     @Transactional(timeout = 30)
     public RestResp<Void> updateBookInfo(Long authorId, Long bookId, String bookName, String description) {
