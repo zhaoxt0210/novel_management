@@ -466,6 +466,7 @@
         try {
             const response = await fetch(`/api/book/${bookId}/chapters`);
             const data = await response.json();
+            console.log('章节列表响应:', data);  // 添加日志
             if (data.code === 200 && data.data && data.data.length > 0) {
                 document.getElementById('chapterSection').style.display = 'block';
                 const html = data.data.map(chapter => `
@@ -477,12 +478,13 @@
             } else if (data.data && data.data.length === 0) {
                 document.getElementById('chapterSection').style.display = 'block';
                 document.getElementById('chapterList').innerHTML = '<div style="text-align:center;padding:30px;">暂无章节</div>';
+            } else {
+                console.log('章节数据为空或格式不正确');
             }
         } catch (error) {
             console.error('加载章节失败:', error);
         }
     }
-
     async function loadComments() {
         try {
             const response = await fetch(`/api/book/comment/${bookId}?pageNum=1&pageSize=20`);
