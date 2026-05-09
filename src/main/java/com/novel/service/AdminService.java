@@ -12,29 +12,33 @@ import java.util.Map;
 
 public interface AdminService {
     RestResp<AdminLoginRespDto> adminLogin(String username, String password);
-    
+
     // 用户管理
     RestResp<List<UserInfoRespDto>> listAllUsers();
     RestResp<Void> updateUserStatus(Long userId, Integer status);
     RestResp<Void> updateUserRole(Long userId, Integer role);
-    
+
     // 作者审核
     RestResp<List<AuthorApplyRespDto>> listAuthorApplies(Integer status);
     RestResp<Void> auditAuthorApply(Long applyId, Integer status, String remark);
-    
+
     // 小说管理
     RestResp<List<BookInfoRespDto>> listAllBooks();
     RestResp<Void> deleteBook(Long bookId);
     RestResp<Void> offShelfBook(Long bookId);
-    
+
+    // 作品审核
+    RestResp<Void> auditBook(Long bookId, Integer auditStatus, String remark);
+    RestResp<List<BookInfoRespDto>> getPendingBooks();
+
     // 分类管理
     RestResp<List<CategoryRespDto>> listAllCategories();
     RestResp<Void> addCategory(CategoryAddReqDto dto);
     RestResp<Void> updateCategory(Long categoryId, CategoryAddReqDto dto);
     RestResp<Void> deleteCategory(Long categoryId);
-    
+
     // 统计
     RestResp<Map<String, Object>> getStatistics();
-    
+
     RestResp<Void> resetPassword(Long adminId, String newPassword);
 }

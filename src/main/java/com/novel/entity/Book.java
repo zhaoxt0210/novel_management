@@ -26,6 +26,12 @@ public class Book {
     private Long lastChapterId;
     private String lastChapterName;
 
+    // 新增审核相关字段
+    private Integer auditStatus;  // 审核状态: 0-草稿,1-待审核,2-已发布,3-已驳回
+    private String auditRemark;    // 审核备注
+    private LocalDateTime submitTime;  // 提交审核时间
+    private LocalDateTime auditTime;   // 审核时间
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 

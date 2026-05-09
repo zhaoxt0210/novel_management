@@ -1,69 +1,71 @@
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/AdminLoginRespDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/entity/Chapter.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/controller/author/AuthorController.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/entity/Category.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/RankManageReqDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/security/JwtAuthenticationFilter.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/mapper/AuthorApplyMapper.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/common/resp/RestResp.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/config/MyMetaObjectHandler.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/mapper/BookRankMapper.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/entity/Comment.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/service/UserService.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/ChapterAddReqDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/mapper/BookMapper.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/mapper/CommentMapper.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/entity/Book.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/mapper/CategoryMapper.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/ReadHistoryRespDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/RankBookRespDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/controller/front/BookshelfController.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/controller/front/FavoritesController.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/BookSearchReqDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/entity/BookRank.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/controller/CategoryController.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/entity/User.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/UserInfoRespDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/controller/front/UserController.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/service/CategoryService.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/UserRegisterReqDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/BookshelfRespDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/AuthorApplyReqDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/CommentAddReqDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/BookInfoRespDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/CategoryRespDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/service/impl/RankServiceImpl.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/service/impl/BookServiceImpl.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/service/impl/UserServiceImpl.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/mapper/ChapterMapper.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/security/JwtTokenProvider.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/AuthorApplyRespDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/CommentRespDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/controller/admin/AdminController.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/service/impl/AuthorServiceImpl.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/UserLoginRespDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/entity/Admin.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/mapper/BookFavoriteMapper.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/service/RankService.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/service/AdminService.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/entity/ReadHistory.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/service/BookService.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/UserLoginReqDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/ReadProgressReqDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/config/MybatisPlusConfig.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/NovelApplication.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/service/AuthorService.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/CategoryAddReqDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/ChapterUpdateReqDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/entity/AuthorApply.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/controller/admin/RankController.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/service/impl/CategoryServiceImpl.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/config/SecurityConfig.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/req/BookAddReqDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/dto/resp/ChapterRespDto.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/mapper/UserMapper.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/controller/front/BookController.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/mapper/ReadHistoryMapper.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/mapper/AdminMapper.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/entity/BookFavorite.java
-/Users/liko/code/java-code/novel_management 2/src/main/java/com/novel/service/impl/AdminServiceImpl.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\resp\CommentRespDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\config\SecurityConfig.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\mapper\CommentMapper.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\config\MybatisPlusConfig.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\controller\front\BookshelfController.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\resp\UserInfoRespDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\resp\BookPublishRespDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\service\AdminService.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\controller\admin\AdminController.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\controller\admin\RankController.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\req\CategoryAddReqDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\resp\ReadHistoryRespDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\req\AuthorApplyReqDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\entity\BookRank.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\req\BookAddReqDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\resp\ChapterRespDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\resp\CategoryRespDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\resp\AuthorApplyRespDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\config\MyMetaObjectHandler.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\security\JwtTokenProvider.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\service\impl\CategoryServiceImpl.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\req\UserRegisterReqDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\resp\RankBookRespDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\entity\Category.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\req\ChapterAddReqDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\req\BookPublishReqDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\service\CategoryService.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\mapper\BookRankMapper.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\security\JwtAuthenticationFilter.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\mapper\CategoryMapper.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\req\UserLoginReqDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\mapper\UserMapper.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\entity\AuthorApply.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\mapper\ChapterMapper.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\controller\front\BookController.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\service\BookService.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\service\RankService.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\NovelApplication.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\entity\Chapter.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\mapper\ReadHistoryMapper.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\common\resp\RestResp.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\controller\author\AuthorController.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\resp\AdminLoginRespDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\resp\BookInfoRespDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\resp\UserLoginRespDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\req\ReadProgressReqDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\req\ChapterUpdateReqDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\mapper\AuthorApplyMapper.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\controller\front\UserController.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\entity\BookFavorite.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\mapper\BookFavoriteMapper.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\mapper\AdminMapper.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\req\BookSearchReqDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\entity\Book.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\service\impl\UserServiceImpl.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\service\impl\BookServiceImpl.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\service\impl\RankServiceImpl.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\req\CommentAddReqDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\service\impl\AuthorServiceImpl.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\controller\front\FavoritesController.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\service\impl\AdminServiceImpl.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\controller\CategoryController.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\resp\BookshelfRespDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\entity\Admin.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\entity\User.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\dto\req\RankManageReqDto.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\service\UserService.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\entity\Comment.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\entity\ReadHistory.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\service\AuthorService.java
+E:\python\桌面\软件系统综合开发实践\1\src\main\java\com\novel\mapper\BookMapper.java

@@ -60,8 +60,8 @@ public class AdminController {
     @Operation(summary = "审核作者申请")
     @PutMapping("/author-applies/{applyId}/audit")
     public RestResp<Void> auditAuthorApply(@PathVariable Long applyId,
-                                            @RequestParam Integer status,
-                                            @RequestParam(required = false) String remark) {
+                                           @RequestParam Integer status,
+                                           @RequestParam(required = false) String remark) {
         return adminService.auditAuthorApply(applyId, status, remark);
     }
 
@@ -82,6 +82,21 @@ public class AdminController {
     @PutMapping("/books/{bookId}/off-shelf")
     public RestResp<Void> offShelfBook(@PathVariable Long bookId) {
         return adminService.offShelfBook(bookId);
+    }
+
+    // ========== 作品审核 ==========
+    @Operation(summary = "审核作品")
+    @PutMapping("/books/{bookId}/audit")
+    public RestResp<Void> auditBook(@PathVariable Long bookId,
+                                    @RequestParam Integer auditStatus,
+                                    @RequestParam(required = false) String remark) {
+        return adminService.auditBook(bookId, auditStatus, remark);
+    }
+
+    @Operation(summary = "获取待审核作品列表")
+    @GetMapping("/books/pending")
+    public RestResp<List<BookInfoRespDto>> getPendingBooks() {
+        return adminService.getPendingBooks();
     }
 
     // ========== 分类管理 ==========

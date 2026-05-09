@@ -160,6 +160,11 @@
             cursor: pointer;
         }
         .action-btn:hover { border-color: #e74c3c; color: #e74c3c; }
+        .action-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .action-btn.disabled:hover { border-color: #e0e0e0; color: #555; }
         .pagination {
             margin-top: 18px;
             display: flex;
@@ -186,6 +191,66 @@
             color: #888;
             padding: 30px 0;
         }
+        .status-draft { color: #f39c12; }
+        .status-pending { color: #3498db; }
+        .status-published { color: #27ae60; }
+        .status-rejected { color: #e74c3c; }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 600px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 { font-size: 18px; }
+        .close-modal {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .modal-body { padding: 20px; }
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        .form-group textarea { min-height: 200px; resize: vertical; }
         @media (max-width: 900px) {
             .work-list { grid-template-columns: 1fr; }
         }
@@ -212,9 +277,10 @@
             <input id="searchKeyword" class="input" placeholder="搜索作品名">
             <select id="statusFilter" class="select">
                 <option value="all">全部状态</option>
-                <option value="0">连载中</option>
-                <option value="1">已完结</option>
-                <option value="2">已下架</option>
+                <option value="0">草稿</option>
+                <option value="1">待审核</option>
+                <option value="2">已发布</option>
+                <option value="3">已驳回</option>
             </select>
             <select id="pageSizeSelect" class="select">
                 <option value="5">每页 5 条</option>
@@ -235,12 +301,113 @@
     </section>
 </main>
 
+<!-- 增加章节模态框 -->
+<div id="chapterModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>添加章节</h3>
+            <span class="close-modal" onclick="closeChapterModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>章节标题</label>
+                <input type="text" id="chapterName" placeholder="请输入章节标题（2-30个字符）">
+            </div>
+            <div class="form-group">
+                <label>章节内容</label>
+                <textarea id="chapterContent" placeholder="请输入章节内容（至少20个字符）"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeChapterModal()">取消</button>
+            <button class="btn btn-primary" id="saveChapterBtn">保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑书籍信息模态框 -->
+<div id="editBookModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>编辑作品信息</h3>
+            <span class="close-modal" onclick="closeEditBookModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>作品名称</label>
+                <input type="text" id="editBookName" placeholder="请输入作品名称（2-50个字符）">
+            </div>
+            <div class="form-group">
+                <label>作品简介</label>
+                <textarea id="editBookDesc" rows="4" placeholder="请输入作品简介"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeEditBookModal()">取消</button>
+            <button class="btn btn-primary" id="updateBookBtn">保存修改</button>
+        </div>
+    </div>
+</div>
+
 <script>
     let userId = null;
     let allWorks = [];
     let filteredWorks = [];
     let currentPage = 1;
     let pageSize = 10;
+    let currentBookId = null;
+    let currentEditingBook = null;
+
+    // 状态文本
+    function getStatusText(book) {
+        const auditStatus = book.auditStatus;
+        const status = book.status;
+
+        if (auditStatus === 0) return '草稿';
+        if (auditStatus === 1) return '待审核';
+        if (auditStatus === 3) return '已驳回';
+        if (auditStatus === 2) {
+            if (status === 0) return '连载中';
+            if (status === 1) return '已完结';
+            if (status === 2) return '已下架';
+            return '已发布';
+        }
+        return '未知';
+    }
+
+    function getStatusClass(book) {
+        const auditStatus = book.auditStatus;
+        if (auditStatus === 0) return 'status-draft';
+        if (auditStatus === 1) return 'status-pending';
+        if (auditStatus === 2) return 'status-published';
+        if (auditStatus === 3) return 'status-rejected';
+        return '';
+    }
+
+    // 判断是否可以编辑信息（草稿或已驳回）
+    function canEditInfo(book) {
+        return book.auditStatus === 0 || book.auditStatus === 3;
+    }
+
+    // 判断是否可以增加章节（草稿、已驳回、已发布且未完结）
+    function canAddChapter(book) {
+        return book.auditStatus === 0 || book.auditStatus === 3 || (book.auditStatus === 2 && book.status === 0);
+    }
+
+    // 判断是否显示提交审核按钮（草稿状态）
+    function showSubmitAudit(book) {
+        return book.auditStatus === 0;
+    }
+
+    // 判断是否显示再次审核按钮（已驳回状态）
+    function showResubmitAudit(book) {
+        return book.auditStatus === 3;
+    }
+
+    // 判断是否显示编辑状态按钮（已发布状态）
+    function showEditStatus(book) {
+        return book.auditStatus === 2;
+    }
 
     function setStatus(type, text) {
         const node = document.getElementById('globalStatus');
@@ -260,17 +427,10 @@
         return true;
     }
 
-    function statusText(status) {
-        if (status === 0) return '连载中';
-        if (status === 1) return '已完结';
-        if (status === 2) return '已下架';
-        return '未知';
-    }
-
     function formatDate(isoDate) {
         if (!isoDate) return '--';
         const date = new Date(isoDate);
-        if (Number.isNaN(date.getTime())) return isoDate;
+        if (isNaN(date.getTime())) return isoDate;
         return date.toLocaleString('zh-CN', { hour12: false });
     }
 
@@ -296,12 +456,16 @@
 
     function applyFilterAndRender() {
         const keyword = document.getElementById('searchKeyword').value.trim();
-        const status = document.getElementById('statusFilter').value;
+        const filterStatus = document.getElementById('statusFilter').value;
         pageSize = Number(document.getElementById('pageSizeSelect').value) || 10;
 
         filteredWorks = allWorks.filter(item => {
             const matchKeyword = !keyword || (item.bookName || '').includes(keyword);
-            const matchStatus = status === 'all' || String(item.status) === status;
+            let matchStatus = true;
+            if (filterStatus !== 'all') {
+                const auditStatus = item.auditStatus;
+                matchStatus = String(auditStatus) === filterStatus;
+            }
             return matchKeyword && matchStatus;
         });
         currentPage = 1;
@@ -314,35 +478,51 @@
         const current = filteredWorks.slice(start, start + pageSize);
         const listNode = document.getElementById('workList');
 
-        if (!total) {
+        if (total === 0) {
             listNode.innerHTML = '<div class="empty">暂无符合条件的作品</div>';
             document.getElementById('pagination').innerHTML = '';
             return;
         }
 
-        listNode.innerHTML = current.map(book => {
-            const cover = book.cover ? `<img src="${book.cover}" alt="封面">` : '<i class="fas fa-book"></i>';
-            return `
+        let html = '';
+        for (let i = 0; i < current.length; i++) {
+            const book = current[i];
+            const coverHtml = book.cover ? `<img src="${book.cover}" alt="封面">` : '<i class="fas fa-book"></i>';
+            const statusText = getStatusText(book);
+            const statusClass = getStatusClass(book);
+            const canAdd = canAddChapter(book);
+            const canEdit = canEditInfo(book);
+            const showSubmit = showSubmitAudit(book);
+            const showResubmit = showResubmitAudit(book);
+            const showStatusEdit = showEditStatus(book);
+
+            html += `
                 <article class="work-item">
-                    <div class="cover">${cover}</div>
+                    <div class="cover">${coverHtml}</div>
                     <div class="work-main">
-                        <div class="work-title">${book.bookName || '未命名作品'}</div>
+                        <div class="work-title">${escapeHtml(book.bookName) || '未命名作品'}</div>
                         <div class="meta">
-                            <div>状态：${statusText(book.status)}</div>
+                            <div>状态：<span class="${statusClass}">${statusText}</span></div>
                             <div>更新时间：${formatDate(book.updateTime)}</div>
-                            <div>分类：${book.categoryName || '未分类'} | 字数：${book.totalWords || 0}</div>
+                            <div>分类：${escapeHtml(book.categoryName) || '未分类'} | 字数：${book.totalWords || 0}</div>
+                            ${book.auditStatus === 3 && book.auditRemark ? `<div>驳回原因：${escapeHtml(book.auditRemark)}</div>` : ''}
                         </div>
-                        <div class="desc">${book.description || '暂无作品简介'}</div>
+                        <div class="desc">${escapeHtml(book.description) || '暂无作品简介'}</div>
                         <div class="actions">
                             <button class="action-btn" onclick="viewBook(${book.id})">查看详情</button>
-                            <button class="action-btn" onclick="editBookStatus(${book.id}, ${book.status})">编辑状态</button>
-                            <button class="action-btn" onclick="deleteBook(${book.id})">删除</button>
+                            ${canAdd ? `<button class="action-btn" onclick="showAddChapterModal(${book.id})">增加章节</button>` : ''}
+                            ${showSubmit ? `<button class="action-btn" style="background:#27ae60;color:white;" onclick="submitForAudit(${book.id})">提交审核</button>` : ''}
+                            ${showResubmit ? `<button class="action-btn" style="background:#f39c12;color:white;" onclick="resubmitForAudit(${book.id})">再次审核</button>` : ''}
+                            ${canEdit ? `<button class="action-btn" onclick="showEditBookModal(${book.id})">编辑信息</button>` : ''}
+                            ${showStatusEdit ? `<button class="action-btn" onclick="editBookStatus(${book.id}, ${book.status})">修改状态</button>` : ''}
+                            <button class="action-btn" onclick="deleteBook(${book.id})">下架</button>
                         </div>
                     </div>
                 </article>
             `;
-        }).join('');
+        }
 
+        listNode.innerHTML = html;
         renderPagination(total);
     }
 
@@ -369,20 +549,84 @@
         renderCurrentPage();
     }
 
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     function viewBook(bookId) {
         window.location.href = `/book.html?id=${bookId}`;
     }
 
     async function updateStatus(bookId, status) {
-        const resp = await fetch(`/api/author/${userId}/book/${bookId}/status?status=${status}`, { method: 'PUT' });
+        const token = localStorage.getItem('token');
+        const resp = await fetch(`/api/author/${userId}/book/${bookId}/status?status=${status}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
         const result = await resp.json();
         if (result.code !== 200) {
             throw new Error(result.msg || '操作失败');
         }
     }
 
+    // 编辑书籍信息模态框
+    function showEditBookModal(bookId) {
+        const book = allWorks.find(b => b.id === bookId);
+        if (!book) return;
+        currentEditingBook = book;
+        document.getElementById('editBookName').value = book.bookName || '';
+        document.getElementById('editBookDesc').value = book.description || '';
+        document.getElementById('editBookModal').style.display = 'flex';
+    }
+
+    function closeEditBookModal() {
+        document.getElementById('editBookModal').style.display = 'none';
+        currentEditingBook = null;
+    }
+
+    document.getElementById('updateBookBtn').addEventListener('click', async function() {
+        if (!currentEditingBook) return;
+
+        const bookName = document.getElementById('editBookName').value.trim();
+        const description = document.getElementById('editBookDesc').value.trim();
+
+        if (!bookName) {
+            alert('请输入作品名称');
+            return;
+        }
+        if (bookName.length < 2 || bookName.length > 50) {
+            alert('作品名称长度必须在2-50个字符之间');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const resp = await fetch(`/api/author/${userId}/book/${currentEditingBook.id}/info`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ bookName, description })
+            });
+            const result = await resp.json();
+            if (result.code === 200) {
+                alert('更新成功');
+                closeEditBookModal();
+                await loadWorks();
+            } else {
+                alert(result.msg || '更新失败');
+            }
+        } catch (error) {
+            alert('操作失败，请稍后重试');
+        }
+    });
+
     async function editBookStatus(bookId, currentStatus) {
-        const input = prompt('请输入新状态：0=连载中，1=已完结，2=已下架', String(currentStatus ?? 0));
+        const input = prompt('请选择新状态：\n0 = 连载中\n1 = 已完结\n2 = 已下架', String(currentStatus ?? 0));
         if (input === null) return;
         const nextStatus = Number(input);
         if (![0, 1, 2].includes(nextStatus)) {
@@ -399,15 +643,152 @@
     }
 
     async function deleteBook(bookId) {
-        if (!confirm('确认删除该作品吗？将执行下架操作（状态=2）。')) return;
+        const book = allWorks.find(b => b.id === bookId);
+        if (!book) return;
+
+        let message = '确定要下架这部作品吗？';
+        if (book.auditStatus === 0) {
+            message = '确定要删除这个草稿吗？删除后不可恢复。';
+        } else if (book.auditStatus === 2 && book.status === 0) {
+            message = '确定要下架这部作品吗？下架后读者将无法阅读。';
+        }
+
+        if (!confirm(message)) return;
+
         try {
             await updateStatus(bookId, 2);
-            alert('作品已下架');
+            alert('操作成功');
             await loadWorks();
         } catch (error) {
-            alert(error.message || '删除失败');
+            alert(error.message || '操作失败');
         }
     }
+
+   // 提交审核（草稿 -> 待审核）
+    async function submitForAudit(bookId) {
+        if (!confirm('确定要提交审核吗？提交后作品将进入审核流程，审核期间无法修改。')) return;
+
+        const submitBtn = event.target;
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = '提交中...';
+        submitBtn.disabled = true;
+
+        try {
+            const token = localStorage.getItem('token');
+            console.log('提交审核，bookId:', bookId);
+
+            const response = await fetch(`/api/author/${userId}/book/${bookId}/submit-audit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+    });
+
+            const result = await response.json();
+            console.log('提交审核响应:', result);
+
+            if (result.code === 200) {
+                alert('提交审核成功！作品已进入审核流程，请等待管理员审核。');
+                // 刷新作品列表
+                await loadWorks();
+            } else {
+                alert(result.msg || '提交失败，请稍后重试');
+            }
+        } catch (error) {
+            console.error('提交审核失败:', error);
+            alert('操作失败，请稍后重试：' + error.message);
+        } finally {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
+    }
+
+    // 再次提交审核（已驳回 -> 待审核）
+    async function resubmitForAudit(bookId) {
+        if (!confirm('确定要再次提交审核吗？提交后作品将重新进入审核流程。')) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            const resp = await fetch(`/api/author/${userId}/book/${bookId}/resubmit-audit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const result = await resp.json();
+            if (result.code === 200) {
+                alert('再次提交成功！请等待管理员审核。');
+                await loadWorks();
+            } else {
+                alert(result.msg || '提交失败');
+            }
+        } catch (error) {
+            alert('操作失败，请稍后重试');
+        }
+    }
+
+    // 增加章节
+    function showAddChapterModal(bookId) {
+        currentBookId = bookId;
+        document.getElementById('chapterName').value = '';
+        document.getElementById('chapterContent').value = '';
+        document.getElementById('chapterModal').style.display = 'flex';
+    }
+
+    function closeChapterModal() {
+        document.getElementById('chapterModal').style.display = 'none';
+        currentBookId = null;
+    }
+
+    document.getElementById('saveChapterBtn').addEventListener('click', async function() {
+        const chapterName = document.getElementById('chapterName').value.trim();
+        const content = document.getElementById('chapterContent').value.trim();
+
+        if (!chapterName) {
+            alert('请输入章节标题');
+            return;
+        }
+        if (chapterName.length < 2 || chapterName.length > 30) {
+            alert('章节标题长度必须在2-30个字符之间');
+            return;
+        }
+        if (!content) {
+            alert('请输入章节内容');
+            return;
+        }
+        if (content.length < 20) {
+            alert('章节内容至少需要20个字符');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const resp = await fetch(`/api/author/${userId}/chapter`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    bookId: currentBookId,
+                    chapterName: chapterName,
+                    content: content
+                })
+            });
+            const result = await resp.json();
+            if (result.code === 200) {
+                alert('章节添加成功');
+                closeChapterModal();
+                await loadWorks();
+            } else {
+                alert(result.msg || '添加失败');
+            }
+        } catch (error) {
+            alert('操作失败，请稍后重试');
+        }
+    });
 
     function resetFilters() {
         document.getElementById('searchKeyword').value = '';
@@ -425,6 +806,14 @@
         document.getElementById('resetBtn').addEventListener('click', resetFilters);
         document.getElementById('pageSizeSelect').addEventListener('change', applyFilterAndRender);
         document.getElementById('publishBtn').addEventListener('click', goToPublish);
+
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('chapterModal');
+            if (event.target === modal) closeChapterModal();
+            const editModal = document.getElementById('editBookModal');
+            if (event.target === editModal) closeEditBookModal();
+        });
+
         await loadWorks();
     };
 </script>

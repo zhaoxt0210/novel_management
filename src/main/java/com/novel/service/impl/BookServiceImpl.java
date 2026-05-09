@@ -239,12 +239,12 @@ public class BookServiceImpl implements BookService {
         return RestResp.ok();
     }
 
-    // ========== 以下为原有方法，保持不变 ==========
 
     @Override
     public RestResp<List<BookInfoRespDto>> listHomeBooks() {
         LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Book::getStatus, 0);
+        wrapper.eq(Book::getAuditStatus, 2);  // 只显示审核通过的作品
+        wrapper.eq(Book::getStatus, 0);  // 连载中
         wrapper.orderByDesc(Book::getUpdateTime);
         wrapper.last("limit 10");
         List<Book> books = bookMapper.selectList(wrapper);
@@ -255,6 +255,9 @@ public class BookServiceImpl implements BookService {
     public RestResp<Map<String, Object>> searchBooks(BookSearchReqDto dto) {
         Map<String, Object> result = new HashMap<>();
         LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
+
+        // 只搜索审核通过的作品
+        wrapper.eq(Book::getAuditStatus, 2);
 
         if (dto.getKeyword() != null && !dto.getKeyword().trim().isEmpty()) {
             String keyword = dto.getKeyword().trim();
@@ -278,7 +281,6 @@ public class BookServiceImpl implements BookService {
         } else {
             wrapper.orderByDesc(Book::getUpdateTime);
         }
-
         Page<Book> page = new Page<>(dto.getPageNum(), dto.getPageSize());
         IPage<Book> bookPage = bookMapper.selectPage(page, wrapper);
 
