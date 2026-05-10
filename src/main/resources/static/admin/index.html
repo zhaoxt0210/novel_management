@@ -131,10 +131,7 @@
             color: white;
         }
 
-        .action-icon.rank {
-            background: linear-gradient(135deg, #f39c12, #e67e22);
-            color: white;
-        }
+        
 
         .action-icon.books {
             background: linear-gradient(135deg, #9b59b6, #8e44ad);
@@ -225,14 +222,7 @@
                     <div class="action-desc">审核用户发布的小说作品</div>
                     <span class="action-badge" id="pendingBookCount">0 条待审核</span>
                 </div>
-                <div class="action-card" onclick="goToRankManage()">
-                    <div class="action-icon rank">
-                        <i class="fas fa-trophy"></i>
-                    </div>
-                    <div class="action-title">排行榜管理</div>
-                    <div class="action-desc">管理小说排行榜，设置推荐内容</div>
-                    <span class="action-badge">管理榜单</span>
-                </div>
+                
             </div>
         </div>
     </div>
@@ -281,10 +271,6 @@
 
         function goToBookAudit() {
             window.location.href = '/admin/book-audit.html';
-        }
-
-        function goToRankManage() {
-            window.location.href = '/admin/rank.html';
         }
 
         function logout() {

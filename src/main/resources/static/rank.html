@@ -374,7 +374,7 @@
             let url;
             if (type === 1) {
                 // 点击榜：按阅读量排序
-                url = '/api/book/rank/visit?limit=50';
+                url = '/api/book/rank/hottest?limit=50';
             } else {
                 // 收藏榜：按收藏量排序
                 url = '/api/book/rank/favorite?limit=50';
@@ -386,36 +386,6 @@
             if (data.code === 200) {
                 const books = data.data || [];
                 renderRankList(books, type);
-            } else if (data.code === 500 && data.msg && data.msg.includes('不存在')) {
-                // 如果接口不存在，尝试使用备用接口
-                await loadRankFromAdminApi(type);
-            } else {
-                showError(data.msg || '加载失败');
-            }
-        } catch (error) {
-            console.error('加载排行榜失败:', error);
-            // 备用方案：尝试使用管理接口
-            await loadRankFromAdminApi(type);
-        }
-    }
-
-    async function loadRankFromAdminApi(type) {
-        try {
-            const response = await fetch(`/api/admin/rank/list?rankType=${type}&limit=50`);
-            const data = await response.json();
-
-            if (data.code === 200) {
-                const books = data.data || [];
-                // 根据类型进行排序（如果后端返回的数据未排序）
-                let sortedBooks = [...books];
-                if (type === 1) {
-                    // 点击榜：按访问量降序排序
-                    sortedBooks.sort((a, b) => (b.visitCount || 0) - (a.visitCount || 0));
-                } else if (type === 2) {
-                    // 收藏榜：按收藏量降序排序
-                    sortedBooks.sort((a, b) => (b.favoriteCount || 0) - (a.favoriteCount || 0));
-                }
-                renderRankList(sortedBooks, type);
             } else {
                 showError(data.msg || '加载失败');
             }

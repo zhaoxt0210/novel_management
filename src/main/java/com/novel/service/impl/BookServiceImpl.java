@@ -76,12 +76,14 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<Boolean> isInBookshelf(Long userId, Long bookId) {
         BookFavorite favorite = bookFavoriteMapper.selectBookshelfByUserIdAndBookId(userId, bookId);
         return RestResp.ok(favorite != null);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<List<BookshelfRespDto>> getUserBookshelf(Long userId, String sortBy) {
         List<BookFavorite> favorites;
 
@@ -198,12 +200,14 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<Boolean> isFavorited(Long userId, Long bookId) {
         BookFavorite favorite = bookFavoriteMapper.selectFavoriteByUserIdAndBookId(userId, bookId);
         return RestResp.ok(favorite != null);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<List<BookInfoRespDto>> getUserFavorites(Long userId) {
         List<BookFavorite> favorites = bookFavoriteMapper.selectFavoritesByUserId(userId);
 
@@ -241,6 +245,7 @@ public class BookServiceImpl implements BookService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<List<BookInfoRespDto>> listHomeBooks() {
         LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Book::getAuditStatus, 2);  // 只显示审核通过的作品
@@ -252,6 +257,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<Map<String, Object>> searchBooks(BookSearchReqDto dto) {
         Map<String, Object> result = new HashMap<>();
         LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
@@ -296,6 +302,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<BookInfoRespDto> getBookById(Long bookId) {
         Book book = bookMapper.selectById(bookId);
         if (book == null) {
@@ -305,6 +312,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<List<ChapterRespDto>> listChapters(Long bookId) {
         LambdaQueryWrapper<Chapter> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Chapter::getBookId, bookId);
@@ -363,6 +371,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<List<BookInfoRespDto>> listBooksByCategory(Long categoryId, String sortBy, Integer pageNum, Integer pageSize) {
         int offset = (pageNum - 1) * pageSize;
         String sortColumn = "update_time";
@@ -378,6 +387,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<List<ReadHistoryRespDto>> getReadHistory(Long userId) {
         LambdaQueryWrapper<ReadHistory> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ReadHistory::getUserId, userId)
@@ -449,6 +459,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<List<CommentRespDto>> getComments(Long bookId, Integer pageNum, Integer pageSize) {
         Page<Comment> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
@@ -485,6 +496,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<List<BookInfoRespDto>> getRanking(String type, Integer limit) {
         LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Book::getStatus, 1);  // 已完结
@@ -504,6 +516,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<List<BookInfoRespDto>> getAuthorBooks(Long authorId) {
         LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Book::getAuthorId, authorId);

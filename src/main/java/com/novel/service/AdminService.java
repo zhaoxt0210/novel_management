@@ -6,31 +6,29 @@ import com.novel.dto.resp.AdminLoginRespDto;
 import com.novel.dto.resp.AuthorApplyRespDto;
 import com.novel.dto.resp.BookInfoRespDto;
 import com.novel.dto.resp.CategoryRespDto;
+import com.novel.dto.resp.PageRespDto;
 import com.novel.dto.resp.UserInfoRespDto;
+
 import java.util.List;
+import java.util.Map;
 
 public interface AdminService {
     RestResp<AdminLoginRespDto> adminLogin(String username, String password);
 
-    // 用户管理
     RestResp<List<UserInfoRespDto>> listAllUsers();
     RestResp<Void> updateUserStatus(Long userId, Integer status);
     RestResp<Void> updateUserRole(Long userId, Integer role);
 
-    // 作者审核
     RestResp<List<AuthorApplyRespDto>> listAuthorApplies(Integer status);
     RestResp<Void> auditAuthorApply(Long applyId, Integer status, String remark);
 
-    // 小说管理
-    RestResp<List<BookInfoRespDto>> listAllBooks();
+    RestResp<PageRespDto<BookInfoRespDto>> listAllBooks(Integer pageNum, Integer pageSize, Integer status);
     RestResp<Void> deleteBook(Long bookId);
     RestResp<Void> offShelfBook(Long bookId);
 
-    // 作品审核
     RestResp<Void> auditBook(Long bookId, Integer auditStatus, String remark);
-    RestResp<List<BookInfoRespDto>> getPendingBooks();
+    RestResp<PageRespDto<BookInfoRespDto>> getPendingBooks(Integer pageNum, Integer pageSize);
 
-    // 分类管理
     RestResp<List<CategoryRespDto>> listAllCategories();
     RestResp<Void> addCategory(CategoryAddReqDto dto);
     RestResp<Void> updateCategory(Long categoryId, CategoryAddReqDto dto);

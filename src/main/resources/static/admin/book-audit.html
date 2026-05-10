@@ -79,12 +79,15 @@
             border-radius: 8px;
             margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .toolbar-left {
             display: flex;
             gap: 15px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .btn {
@@ -140,7 +143,7 @@
             font-size: 12px;
         }
 
-        select {
+        select, input {
             padding: 10px 15px;
             border: 1px solid #ddd;
             border-radius: 6px;
@@ -148,7 +151,7 @@
             outline: none;
         }
 
-        select:focus {
+        select:focus, input:focus {
             border-color: #3498db;
         }
 
@@ -364,10 +367,57 @@
             }
         }
 
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .pagination button {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination span {
+            padding: 8px 16px;
+            color: #666;
+        }
+
+        .pagination-info {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .page-size-select {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+
         @media (max-width: 768px) {
             .toolbar {
                 flex-direction: column;
-                gap: 15px;
+                align-items: flex-start;
             }
             
             .toolbar-left {
@@ -380,6 +430,10 @@
             
             .data-table {
                 overflow-x: auto;
+            }
+            
+            .pagination {
+                flex-wrap: wrap;
             }
         }
     </style>
@@ -395,7 +449,6 @@
                     <a href="/admin/index.html"><i class="fas fa-home"></i> 管理首页</a>
                     <a href="/admin/author-audit.html"><i class="fas fa-user-check"></i> 作者审核</a>
                     <a href="/admin/book-audit.html" class="active"><i class="fas fa-book"></i> 作品审核</a>
-                    <a href="/admin/rank.html"><i class="fas fa-trophy"></i> 排行榜管理</a>
                     <a href="/"><i class="fas fa-arrow-left"></i> 返回首页</a>
                 </div>
             </div>
@@ -411,9 +464,15 @@
             <div class="toolbar-left">
                 <select id="statusFilter" onchange="loadBooks()">
                     <option value="">全部状态</option>
-                    <option value="0">待审核</option>
-                    <option value="1">已通过</option>
-                    <option value="2">已拒绝</option>
+                    <option value="0">草稿</option>
+                    <option value="1">待审核</option>
+                    <option value="2">已通过</option>
+                    <option value="3">已驳回</option>
+                </select>
+                <select id="pageSizeSelect" onchange="loadBooks()">
+                    <option value="10">每页10条</option>
+                    <option value="20">每页20条</option>
+                    <option value="50">每页50条</option>
                 </select>
                 <button class="btn btn-secondary" onclick="loadBooks()">
                     <i class="fas fa-redo"></i> 刷新
@@ -447,6 +506,16 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <div class="pagination">
+            <button id="prevBtn" onclick="prevPage()" disabled>
+                <i class="fas fa-chevron-left"></i> 上一页
+            </button>
+            <span id="pageInfo">第 1 / 1 页</span>
+            <button id="nextBtn" onclick="nextPage()" disabled>
+                下一页 <i class="fas fa-chevron-right"></i>
+            </button>
         </div>
     </div>
 
@@ -497,28 +566,42 @@
 
     <script>
         let bookData = [];
+        let currentPage = 1;
+        let totalPages = 1;
+        let totalRecords = 0;
 
         window.onload = function() {
             loadBooks();
         };
 
-        async function loadBooks() {
+        async function loadBooks(pageNum = 1) {
             const status = document.getElementById('statusFilter').value;
+            const pageSize = parseInt(document.getElementById('pageSizeSelect').value);
             const tbody = document.getElementById('bookTableBody');
+            
+            currentPage = pageNum;
             tbody.innerHTML = '<tr><td colspan="9"><div class="loading"><i class="fas fa-spinner fa-spin"></i> 加载中...</div></td></tr>';
             
             try {
-                let url = '/api/admin/books';
+                let url = `/api/admin/books?pageNum=${pageNum}&pageSize=${pageSize}`;
                 if (status) {
-                    url += `?status=${status}`;
+                    url += `&status=${status}`;
                 }
                 
                 const response = await fetch(url);
                 const data = await response.json();
                 
-                if (data.code === 200) {
-                    bookData = data.data || [];
-                    document.getElementById('bookCount').textContent = `共 ${bookData.length} 条记录`;
+                if (data.code === 200 && data.data) {
+                    bookData = data.data.list || [];
+                    totalRecords = data.data.total || 0;
+                    totalPages = data.data.totalPages || 1;
+                    
+                    document.getElementById('bookCount').textContent = `共 ${totalRecords} 条记录`;
+                    document.getElementById('pageInfo').textContent = `第 ${currentPage} / ${totalPages} 页`;
+                    
+                    document.getElementById('prevBtn').disabled = currentPage <= 1;
+                    document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+                    
                     renderBookTable();
                 } else {
                     tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">${data.msg || '加载失败'}</div></td></tr>`;
@@ -526,6 +609,18 @@
             } catch (error) {
                 console.error('加载作品列表失败:', error);
                 tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state">网络错误</div></td></tr>';
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                loadBooks(currentPage - 1);
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                loadBooks(currentPage + 1);
             }
         }
 
@@ -550,7 +645,7 @@
                         <td>${book.totalWords || 0}</td>
                         <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${book.description || ''}">${book.description || '-'}</td>
                         <td><span class="status-badge ${statusInfo.class}">${statusInfo.text}</span></td>
-                        <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${book.remark || ''}">${book.remark || '-'}</td>
+                        <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${book.auditRemark || ''}">${book.auditRemark || '-'}</td>
                         <td>
                             <div class="action-btns">
                                 <button class="btn btn-primary btn-sm" onclick="viewBook(${book.id})">
@@ -609,7 +704,7 @@
                 </div>
                 <div class="book-detail">
                     <h4>审核信息</h4>
-                    <p><strong>审核备注：</strong>${book.remark || '-'}</p>
+                    <p><strong>审核备注：</strong>${book.auditRemark || '-'}</p>
                     <p><strong>创建时间：</strong>${book.createTime ? new Date(book.createTime).toLocaleString('zh-CN') : '-'}</p>
                 </div>
             `;
@@ -663,7 +758,7 @@
                 if (data.code === 200) {
                     showToast(status === '2' ? '审核通过成功' : '审核拒绝成功');
                     closeModal();
-                    loadBooks();
+                    loadBooks(currentPage);
                 } else {
                     showToast(data.msg || '审核失败', 'error');
                 }

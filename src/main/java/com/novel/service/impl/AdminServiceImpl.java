@@ -1,18 +1,22 @@
 package com.novel.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.novel.common.resp.RestResp;
 import com.novel.dto.req.CategoryAddReqDto;
 import com.novel.dto.resp.AdminLoginRespDto;
 import com.novel.dto.resp.AuthorApplyRespDto;
 import com.novel.dto.resp.BookInfoRespDto;
 import com.novel.dto.resp.CategoryRespDto;
+import com.novel.dto.resp.PageRespDto;
 import com.novel.dto.resp.UserInfoRespDto;
 import com.novel.entity.*;
 import com.novel.mapper.*;
 import com.novel.security.JwtTokenProvider;
 import com.novel.service.AdminService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
@@ -62,6 +67,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<List<UserInfoRespDto>> listAllUsers() {
         List<User> users = userMapper.selectList(null);
         return RestResp.ok(users.stream().map(this::convertToUserDto).collect(Collectors.toList()));
@@ -86,13 +92,18 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<List<AuthorApplyRespDto>> listAuthorApplies(Integer status) {
+        long startTime = System.currentTimeMillis();
+        
         LambdaQueryWrapper<AuthorApply> wrapper = new LambdaQueryWrapper<>();
         if (status != null) {
             wrapper.eq(AuthorApply::getStatus, status);
         }
         wrapper.orderByDesc(AuthorApply::getCreateTime);
         List<AuthorApply> applies = authorApplyMapper.selectList(wrapper);
+
+        log.debug("查询作者申请列表耗时: {}ms, 数量: {}", System.currentTimeMillis() - startTime, applies.size());
 
         if (applies.isEmpty()) {
             return RestResp.ok(List.of());
@@ -137,7 +148,6 @@ public class AdminServiceImpl implements AdminService {
         apply.setUpdateTime(LocalDateTime.now());
         authorApplyMapper.updateById(apply);
 
-        // 如果审核通过，更新用户角色为作者(1)
         if (status == 1) {
             userMapper.updateRole(apply.getUserId(), 1);
         }
@@ -146,9 +156,38 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public RestResp<List<BookInfoRespDto>> listAllBooks() {
-        List<Book> books = bookMapper.selectList(null);
-        return RestResp.ok(books.stream().map(this::convertToBookDto).collect(Collectors.toList()));
+    @Transactional(readOnly = true)
+    public RestResp<PageRespDto<BookInfoRespDto>> listAllBooks(Integer pageNum, Integer pageSize, Integer status) {
+        long startTime = System.currentTimeMillis();
+        
+        if (pageNum == null || pageNum < 1) pageNum = 1;
+        if (pageSize == null || pageSize < 1) pageSize = 10;
+
+        Page<Book> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
+        
+        if (status != null) {
+            wrapper.eq(Book::getAuditStatus, status);
+        }
+        
+        wrapper.orderByDesc(Book::getUpdateTime);
+
+        IPage<Book> bookPage = bookMapper.selectPage(page, wrapper);
+        List<Book> books = bookPage.getRecords();
+
+        log.debug("查询书籍列表耗时: {}ms, 数量: {}", System.currentTimeMillis() - startTime, books.size());
+
+        List<BookInfoRespDto> dtoList = convertToBookDtoList(books);
+
+        PageRespDto<BookInfoRespDto> pageResp = PageRespDto.<BookInfoRespDto>builder()
+                .list(dtoList)
+                .total(bookPage.getTotal())
+                .pageNum(pageNum)
+                .pageSize(pageSize)
+                .totalPages((int) Math.ceil((double) bookPage.getTotal() / pageSize))
+                .build();
+
+        return RestResp.ok(pageResp);
     }
 
     @Override
@@ -166,11 +205,11 @@ public class AdminServiceImpl implements AdminService {
         return RestResp.ok();
     }
 
-    // ========== 作品审核方法 ==========
-
     @Override
     @Transactional
     public RestResp<Void> auditBook(Long bookId, Integer auditStatus, String remark) {
+        long startTime = System.currentTimeMillis();
+        
         Book book = bookMapper.selectById(bookId);
         if (book == null) {
             return RestResp.error("作品不存在");
@@ -180,41 +219,58 @@ public class AdminServiceImpl implements AdminService {
             return RestResp.error("无效的审核状态");
         }
 
-        // 更新作品审核状态
         book.setAuditStatus(auditStatus);
         book.setAuditRemark(remark);
         book.setAuditTime(LocalDateTime.now());
 
-        // 如果审核通过，同时更新章节的审核状态
         if (auditStatus == 2) {
             if (book.getStatus() == null) {
                 book.setStatus(0);
             }
-
-            LambdaQueryWrapper<Chapter> chapterWrapper = new LambdaQueryWrapper<>();
-            chapterWrapper.eq(Chapter::getBookId, bookId);
-            List<Chapter> chapters = chapterMapper.selectList(chapterWrapper);
-            for (Chapter chapter : chapters) {
-                chapter.setAuditStatus(2);
-                chapter.setUpdateTime(LocalDateTime.now());
-                chapterMapper.updateById(chapter);
-            }
+            chapterMapper.batchUpdateAuditStatus(bookId, 2, LocalDateTime.now());
         }
 
         bookMapper.updateById(book);
+
+        log.debug("审核作品耗时: {}ms, bookId: {}, auditStatus: {}", 
+                System.currentTimeMillis() - startTime, bookId, auditStatus);
+
         return RestResp.ok();
     }
-    @Override
-    public RestResp<List<BookInfoRespDto>> getPendingBooks() {
-        LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Book::getAuditStatus, 1);  // 待审核状态
-        wrapper.orderByDesc(Book::getSubmitTime);
-        List<Book> books = bookMapper.selectList(wrapper);
 
-        return RestResp.ok(books.stream().map(this::convertToBookDto).collect(Collectors.toList()));
+    @Override
+    @Transactional(readOnly = true)
+    public RestResp<PageRespDto<BookInfoRespDto>> getPendingBooks(Integer pageNum, Integer pageSize) {
+        long startTime = System.currentTimeMillis();
+        
+        if (pageNum == null || pageNum < 1) pageNum = 1;
+        if (pageSize == null || pageSize < 1) pageSize = 10;
+
+        Page<Book> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Book::getAuditStatus, 1);
+        wrapper.orderByDesc(Book::getSubmitTime);
+
+        IPage<Book> bookPage = bookMapper.selectPage(page, wrapper);
+        List<Book> books = bookPage.getRecords();
+
+        log.debug("查询待审核作品耗时: {}ms, 数量: {}", System.currentTimeMillis() - startTime, books.size());
+
+        List<BookInfoRespDto> dtoList = convertToBookDtoList(books);
+
+        PageRespDto<BookInfoRespDto> pageResp = PageRespDto.<BookInfoRespDto>builder()
+                .list(dtoList)
+                .total(bookPage.getTotal())
+                .pageNum(pageNum)
+                .pageSize(pageSize)
+                .totalPages((int) Math.ceil((double) bookPage.getTotal() / pageSize))
+                .build();
+
+        return RestResp.ok(pageResp);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<List<CategoryRespDto>> listAllCategories() {
         List<Category> categories = categoryMapper.selectList(null);
         return RestResp.ok(categories.stream().map(this::convertToCategoryDto).collect(Collectors.toList()));
@@ -247,7 +303,6 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public RestResp<Void> deleteCategory(Long categoryId) {
-        // 检查是否有小说使用此分类
         LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Book::getCategoryId, categoryId);
         if (bookMapper.selectCount(wrapper) > 0) {
@@ -271,6 +326,36 @@ public class AdminServiceImpl implements AdminService {
         return RestResp.ok();
     }
 
+    private List<BookInfoRespDto> convertToBookDtoList(List<Book> books) {
+        if (books == null || books.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> categoryIds = books.stream()
+                .map(Book::getCategoryId)
+                .filter(id -> id != null)
+                .distinct()
+                .collect(Collectors.toList());
+
+        Map<Long, String> categoryNameMap = categoryIds.isEmpty() 
+                ? Map.of() 
+                : categoryMapper.selectBatchIds(categoryIds).stream()
+                        .collect(Collectors.toMap(Category::getId, Category::getName));
+
+        return books.stream().map(book -> BookInfoRespDto.builder()
+                .id(book.getId())
+                .bookName(book.getBookName())
+                .authorName(book.getAuthorName())
+                .categoryName(categoryNameMap.getOrDefault(book.getCategoryId(), ""))
+                .status(book.getStatus())
+                .auditStatus(book.getAuditStatus())
+                .visitCount(book.getVisitCount())
+                .favoriteCount(book.getFavoriteCount())
+                .totalWords(book.getTotalWords())
+                .updateTime(book.getUpdateTime())
+                .build()).collect(Collectors.toList());
+    }
+
     private UserInfoRespDto convertToUserDto(User user) {
         return UserInfoRespDto.builder()
                 .userId(user.getId())
@@ -280,27 +365,6 @@ public class AdminServiceImpl implements AdminService {
                 .avatar(user.getAvatar())
                 .role(user.getRole())
                 .build();
-    }
-
-    private BookInfoRespDto convertToBookDto(Book book) {
-        return BookInfoRespDto.builder()
-                .id(book.getId())
-                .bookName(book.getBookName())
-                .authorName(book.getAuthorName())
-                .categoryName(getCategoryName(book.getCategoryId()))
-                .status(book.getStatus())
-                .auditStatus(book.getAuditStatus())
-                .visitCount(book.getVisitCount())
-                .favoriteCount(book.getFavoriteCount())
-                .totalWords(book.getTotalWords())
-                .updateTime(book.getUpdateTime())
-                .build();
-    }
-
-    private String getCategoryName(Long categoryId) {
-        if (categoryId == null) return "";
-        Category category = categoryMapper.selectById(categoryId);
-        return category != null ? category.getName() : "";
     }
 
     private CategoryRespDto convertToCategoryDto(Category category) {

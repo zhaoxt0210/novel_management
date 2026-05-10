@@ -6,6 +6,7 @@ import com.novel.dto.resp.AdminLoginRespDto;
 import com.novel.dto.resp.AuthorApplyRespDto;
 import com.novel.dto.resp.BookInfoRespDto;
 import com.novel.dto.resp.CategoryRespDto;
+import com.novel.dto.resp.PageRespDto;
 import com.novel.dto.resp.UserInfoRespDto;
 import com.novel.service.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,7 +31,6 @@ public class AdminController {
         return adminService.adminLogin(username, password);
     }
 
-    // ========== 用户管理 ==========
     @Operation(summary = "获取所有用户")
     @GetMapping("/users")
     public RestResp<List<UserInfoRespDto>> listAllUsers() {
@@ -49,7 +49,6 @@ public class AdminController {
         return adminService.updateUserRole(userId, role);
     }
 
-    // ========== 作者审核 ==========
     @Operation(summary = "获取作者申请列表")
     @GetMapping("/author-applies")
     public RestResp<List<AuthorApplyRespDto>> listAuthorApplies(@RequestParam(required = false) Integer status) {
@@ -64,11 +63,13 @@ public class AdminController {
         return adminService.auditAuthorApply(applyId, status, remark);
     }
 
-    // ========== 小说管理 ==========
-    @Operation(summary = "获取所有小说")
+    @Operation(summary = "获取所有小说（分页）")
     @GetMapping("/books")
-    public RestResp<List<BookInfoRespDto>> listAllBooks() {
-        return adminService.listAllBooks();
+    public RestResp<PageRespDto<BookInfoRespDto>> listAllBooks(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) Integer status) {
+        return adminService.listAllBooks(pageNum, pageSize, status);
     }
 
     @Operation(summary = "删除小说")
@@ -83,7 +84,6 @@ public class AdminController {
         return adminService.offShelfBook(bookId);
     }
 
-    // ========== 作品审核 ==========
     @Operation(summary = "审核作品")
     @PutMapping("/books/{bookId}/audit")
     public RestResp<Void> auditBook(@PathVariable Long bookId,
@@ -92,13 +92,14 @@ public class AdminController {
         return adminService.auditBook(bookId, auditStatus, remark);
     }
 
-    @Operation(summary = "获取待审核作品列表")
+    @Operation(summary = "获取待审核作品列表（分页）")
     @GetMapping("/books/pending")
-    public RestResp<List<BookInfoRespDto>> getPendingBooks() {
-        return adminService.getPendingBooks();
+    public RestResp<PageRespDto<BookInfoRespDto>> getPendingBooks(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        return adminService.getPendingBooks(pageNum, pageSize);
     }
 
-    // ========== 分类管理 ==========
     @Operation(summary = "获取所有分类")
     @GetMapping("/categories")
     public RestResp<List<CategoryRespDto>> listAllCategories() {
@@ -123,7 +124,6 @@ public class AdminController {
         return adminService.deleteCategory(categoryId);
     }
 
-    // ========== 密码重置 ==========
     @Operation(summary = "重置管理员密码")
     @PutMapping("/{adminId}/password")
     public RestResp<Void> resetPassword(@PathVariable Long adminId, @RequestParam String newPassword) {

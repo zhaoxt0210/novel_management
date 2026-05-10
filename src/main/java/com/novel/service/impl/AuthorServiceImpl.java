@@ -250,6 +250,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<List<BookInfoRespDto>> getMyBooks(Long authorId) {
         try {
             LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
@@ -264,6 +265,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RestResp<List<ChapterRespDto>> getMyChapters(Long authorId, Long bookId) {
         try {
             Book book = bookMapper.selectById(bookId);

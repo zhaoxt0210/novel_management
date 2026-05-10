@@ -3,18 +3,22 @@ spring:
     name: novel-management-system
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://82.156.240.2:3306/novel_system?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&connectTimeout=60000&socketTimeout=60000
+    url: jdbc:mysql://82.156.240.2:3306/novel_system?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&connectTimeout=60000&socketTimeout=60000&cachePrepStmts=true&useServerPrepStmts=true&prepStmtCacheSize=256&prepStmtCacheSqlLimit=2048
     username: novel_root
     password: novel_123456
     hikari:
-      connection-timeout: 60000
-      validation-timeout: 60000
-      max-lifetime: 600000
-      idle-timeout: 300000
-      minimum-idle: 2
-      maximum-pool-size: 10
+      connection-timeout: 30000
+      validation-timeout: 5000
+      max-lifetime: 1800000
+      idle-timeout: 600000
+      minimum-idle: 5
+      maximum-pool-size: 20
       connection-test-query: SELECT 1
-      leak-detection-threshold: 60000
+      leak-detection-threshold: 30000
+      max-idle-time: 600000
+      pool-name: NovelManagementHikariCP
+      register-mbeans: true
+      allow-pool-suspension: false
 
   servlet:
     multipart:
