@@ -12,6 +12,29 @@ import java.util.List;
 @Mapper
 public interface BookMapper extends BaseMapper<Book> {
 
+    @Select("SELECT id, book_name, category_id, author_id, author_name, status, " +
+            "visit_count, favorite_count, total_words, audit_status, update_time " +
+            "FROM book " +
+            "WHERE status = #{status} " +
+            "ORDER BY update_time DESC " +
+            "LIMIT #{offset}, #{limit}")
+    List<Book> selectBookListByStatus(@Param("status") Integer status, 
+                                      @Param("offset") Integer offset, 
+                                      @Param("limit") Integer limit);
+
+    @Select("SELECT id, book_name, category_id, author_id, author_name, status, " +
+            "visit_count, favorite_count, total_words, audit_status, update_time " +
+            "FROM book " +
+            "ORDER BY update_time DESC " +
+            "LIMIT #{offset}, #{limit}")
+    List<Book> selectBookListAll(@Param("offset") Integer offset, @Param("limit") Integer limit);
+
+    @Select("SELECT COUNT(*) FROM book WHERE status = #{status}")
+    Long countByStatus(@Param("status") Integer status);
+
+    @Select("SELECT COUNT(*) FROM book")
+    Long countAll();
+
     @Update("UPDATE book SET visit_count = visit_count + 1 WHERE id = #{bookId}")
     void addVisitCount(@Param("bookId") Long bookId);
 

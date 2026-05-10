@@ -163,29 +163,41 @@ public class AdminServiceImpl implements AdminService {
         if (pageNum == null || pageNum < 1) pageNum = 1;
         if (pageSize == null || pageSize < 1) pageSize = 10;
 
-        Page<Book> page = new Page<>(pageNum, pageSize);
-        LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
+        int offset = (pageNum - 1) * pageSize;
+        
+        log.debug("开始查询书籍列表 - pageNum: {}, pageSize: {}, status: {}", pageNum, pageSize, status);
+        
+        List<Book> books;
+        long total;
         
         if (status != null) {
-            wrapper.eq(Book::getAuditStatus, status);
+            books = bookMapper.selectBookListByStatus(status, offset, pageSize);
+            total = bookMapper.countByStatus(status);
+        } else {
+            books = bookMapper.selectBookListAll(offset, pageSize);
+            total = bookMapper.countAll();
         }
         
-        wrapper.orderByDesc(Book::getUpdateTime);
+        long queryTime = System.currentTimeMillis() - startTime;
+        log.info("书籍列表查询完成 - 耗时: {}ms, 总记录数: {}, 当前页数量: {}", queryTime, total, books.size());
 
-        IPage<Book> bookPage = bookMapper.selectPage(page, wrapper);
-        List<Book> books = bookPage.getRecords();
-
-        log.debug("查询书籍列表耗时: {}ms, 数量: {}", System.currentTimeMillis() - startTime, books.size());
-
+        long convertStartTime = System.currentTimeMillis();
         List<BookInfoRespDto> dtoList = convertToBookDtoList(books);
+        long convertTime = System.currentTimeMillis() - convertStartTime;
+        log.info("DTO转换完成 - 耗时: {}ms", convertTime);
 
         PageRespDto<BookInfoRespDto> pageResp = PageRespDto.<BookInfoRespDto>builder()
                 .list(dtoList)
-                .total(bookPage.getTotal())
+                .total(total)
                 .pageNum(pageNum)
                 .pageSize(pageSize)
-                .totalPages((int) Math.ceil((double) bookPage.getTotal() / pageSize))
+                .totalPages((int) Math.ceil((double) total / pageSize))
                 .build();
+
+        long totalTime = System.currentTimeMillis() - startTime;
+        if (totalTime > 5000) {
+            log.warn("【性能警告】listAllBooks 总耗时: {}ms，超过5秒", totalTime);
+        }
 
         return RestResp.ok(pageResp);
     }
