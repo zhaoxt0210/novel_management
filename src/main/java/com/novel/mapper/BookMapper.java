@@ -56,8 +56,12 @@ public interface BookMapper extends BaseMapper<Book> {
                                   @Param("offset") Integer offset,
                                   @Param("limit") Integer limit);
 
-    @Select("SELECT * FROM book WHERE author_id = #{authorId} ORDER BY update_time DESC")
+    @Select("SELECT * FROM book USE INDEX (idx_book_author_id_update_time) WHERE author_id = #{authorId} ORDER BY update_time DESC")
     List<Book> selectByAuthorId(@Param("authorId") Long authorId);
+
+    @Select("SELECT id, book_name, category_id, author_name, status, audit_status, visit_count, favorite_count, total_words, last_chapter_id, last_chapter_name, update_time " +
+            "FROM book USE INDEX (idx_book_author_id_update_time) WHERE author_id = #{authorId} ORDER BY update_time DESC")
+    List<Book> selectSimpleByAuthorId(@Param("authorId") Long authorId);
 
     @Select("SELECT * FROM book WHERE status = 0 ORDER BY ${sortBy} DESC LIMIT #{limit}")
     List<Book> getRankingBooks(@Param("sortBy") String sortBy, @Param("limit") Integer limit);

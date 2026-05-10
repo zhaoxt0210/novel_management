@@ -1,0 +1,1 @@
+CREATE INDEX idx_book_author_id_update_time ON novel_system.book (author_id, update_time DESC);

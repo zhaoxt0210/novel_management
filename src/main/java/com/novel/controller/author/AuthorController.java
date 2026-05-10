@@ -6,6 +6,7 @@ import com.novel.dto.req.ChapterAddReqDto;
 import com.novel.dto.req.ChapterUpdateReqDto;
 import com.novel.dto.resp.BookInfoRespDto;
 import com.novel.dto.resp.BookPublishRespDto;
+import com.novel.dto.resp.BookSimpleInfoRespDto;
 import com.novel.dto.resp.ChapterRespDto;
 import com.novel.service.AuthorService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,7 +52,7 @@ public class AuthorController {
 
     @Operation(summary = "获取我的小说列表")
     @GetMapping("/{authorId}/books")
-    public RestResp<List<BookInfoRespDto>> getMyBooks(@PathVariable Long authorId) {
+    public RestResp<List<BookSimpleInfoRespDto>> getMyBooks(@PathVariable Long authorId) {
         return authorService.getMyBooks(authorId);
     }
 

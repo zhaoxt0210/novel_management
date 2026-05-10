@@ -7,6 +7,7 @@ import com.novel.dto.req.ChapterAddReqDto;
 import com.novel.dto.req.ChapterUpdateReqDto;
 import com.novel.dto.resp.BookInfoRespDto;
 import com.novel.dto.resp.BookPublishRespDto;
+import com.novel.dto.resp.BookSimpleInfoRespDto;
 import com.novel.dto.resp.ChapterRespDto;
 import com.novel.entity.Book;
 import com.novel.entity.Chapter;
@@ -251,13 +252,10 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     @Transactional(readOnly = true)
-    public RestResp<List<BookInfoRespDto>> getMyBooks(Long authorId) {
+    public RestResp<List<BookSimpleInfoRespDto>> getMyBooks(Long authorId) {
         try {
-            LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(Book::getAuthorId, authorId);
-            wrapper.orderByDesc(Book::getUpdateTime);
-            List<Book> books = bookMapper.selectList(wrapper);
-            return RestResp.ok(books.stream().map(this::convertToBookInfoDto).collect(Collectors.toList()));
+            List<Book> books = bookMapper.selectSimpleByAuthorId(authorId);
+            return RestResp.ok(books.stream().map(this::convertToSimpleBookInfoDto).collect(Collectors.toList()));
         } catch (Exception e) {
             e.printStackTrace();
             return RestResp.error("获取作品列表失败：" + e.getMessage());
@@ -504,6 +502,23 @@ public class AuthorServiceImpl implements AuthorService {
                 .chapterNum(chapter.getChapterNum())
                 .chapterName(chapter.getChapterName())
                 .wordCount(chapter.getWordCount())
+                .build();
+    }
+
+    private BookSimpleInfoRespDto convertToSimpleBookInfoDto(Book book) {
+        return BookSimpleInfoRespDto.builder()
+                .id(book.getId())
+                .bookName(book.getBookName())
+                .categoryId(book.getCategoryId())
+                .authorName(book.getAuthorName())
+                .status(book.getStatus())
+                .auditStatus(book.getAuditStatus())
+                .visitCount(book.getVisitCount())
+                .favoriteCount(book.getFavoriteCount())
+                .totalWords(book.getTotalWords())
+                .lastChapterId(book.getLastChapterId())
+                .lastChapterName(book.getLastChapterName())
+                .updateTime(book.getUpdateTime())
                 .build();
     }
 }
