@@ -16,7 +16,7 @@ public interface BookMapper extends BaseMapper<Book> {
             "visit_count, favorite_count, total_words, audit_status, update_time " +
             "FROM book " +
             "WHERE status = #{status} " +
-            "ORDER BY update_time DESC " +
+            "ORDER BY id ASC " +
             "LIMIT #{offset}, #{limit}")
     List<Book> selectBookListByStatus(@Param("status") Integer status, 
                                       @Param("offset") Integer offset, 
@@ -25,7 +25,7 @@ public interface BookMapper extends BaseMapper<Book> {
     @Select("SELECT id, book_name, category_id, author_id, author_name, status, " +
             "visit_count, favorite_count, total_words, audit_status, update_time " +
             "FROM book " +
-            "ORDER BY update_time DESC " +
+            "ORDER BY id ASC " +
             "LIMIT #{offset}, #{limit}")
     List<Book> selectBookListAll(@Param("offset") Integer offset, @Param("limit") Integer limit);
 
