@@ -608,26 +608,37 @@
         const listEl = document.getElementById('booksList');
         listEl.innerHTML = '<div class="loading">搜索中...</div>';
 
+        // 构建搜索参数，传入当前分类ID实现分类内搜索
+        const searchBody = { keyword: keyword, pageNum: 1, pageSize: 50 };
+        if (currentCategoryId) {
+            searchBody.categoryId = currentCategoryId;
+        }
+
         fetch('/api/book/search', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ keyword: keyword, pageNum: 1, pageSize: 50 })
+            body: JSON.stringify(searchBody)
         })
         .then(res => res.json())
         .then(data => {
             if (data.code === 200) {
-                const books = data.data.list || data.data || [];
+                let books = data.data.list || data.data || [];
                 if (books.length === 0) {
+                    const categoryName = currentCategoryId ?
+                        (categories.find(c => c.id === currentCategoryId)?.name || '') : '';
                     listEl.innerHTML = `
                         <div class="empty-state" style="grid-column: 1/-1;">
                             <div class="empty-icon">🔍</div>
-                            <div class="empty-title">未找到"${escapeHtml(keyword)}"的相关书籍</div>
+                            <div class="empty-title">${categoryName ? '在「' + categoryName + '」中未找到' : '未找到'}"${escapeHtml(keyword)}"的相关书籍</div>
                         </div>
                     `;
                 } else {
                     renderBooks(books);
                 }
-                document.getElementById('categoryTitle').innerHTML = `搜索: "${keyword}"`;
+                const categoryName = currentCategoryId ?
+                    (categories.find(c => c.id === currentCategoryId)?.name || '') : '';
+                document.getElementById('categoryTitle').innerHTML = categoryName ?
+                    `${categoryName} - 搜索: "${keyword}"` : `搜索: "${keyword}"`;
                 document.getElementById('pagination').innerHTML = '';
             } else {
                 listEl.innerHTML = '<div class="loading">' + data.msg + '</div>';
